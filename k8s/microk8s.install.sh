@@ -89,6 +89,10 @@ fi
 echo -e "${_BLUE}Enable GPU operator${_NC}\n"
 microk8s enable gpu
 
+# Log in to registry.bioturing.com
+echo -e "${_BLUE}Logging in to registry.bioturing.com${_NC}"
+microk8s helm3 registry login -u admin registry.bioturing.com
+
 echo -e "${_BLUE}Add BioTuring Helm charts to microk8s service${_NC}\n"
 microk8s helm3 repo add bioturing https://bioturing.github.io/charts/apps/
 microk8s helm3 repo update

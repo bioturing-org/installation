@@ -217,6 +217,7 @@ SVHOST="k8stest.bioturing.com" # <- (CHANGE THIS TO YOUR K8S INGRESS DOMAIN)
 For Microk8s:
 
 microk8s helm3 repo update
+microk8s helm3 registry login -u admin registry.bioturing.com
 microk8s helm3 upgrade --install --set secret.data.bbtoken="${BBTOKEN}" \
  --set secret.data.domain="${SVHOST}" \
  --set secret.server.certificate="${SSLCRT}" \
@@ -229,6 +230,7 @@ bioturing bioturing/ecosystem --version 1.0.18
 For Vanilla k8s:
 
 helm repo update
+helm registry login -u admin registry.bioturing.com
 helm upgrade --install --set secret.data.bbtoken="${BBTOKEN}" \
  --set secret.data.domain="${SVHOST}" \
  --set secret.server.certificate="${SSLCRT}" \
