@@ -202,16 +202,16 @@ Kubernetes: `>=1.19.0-0`
 | gpu.runtimeClassName | string | `"nvidia"` | |
 
 
-For containerd runtime :
+For Containerd runtime :
 
 ```
 gpu.runtimeClassName="nvidia"
 ```
 
-For docker runtime :
+For Docker runtime :
 
 ```
-gpu.runtimeClassName="nvidia"
+gpu.runtimeClassName=""
 ```
 
 7.  Manual Installation 
