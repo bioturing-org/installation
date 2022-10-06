@@ -198,7 +198,21 @@ Kubernetes: `>=1.19.0-0`
 | podSecurityContext | object | `{}` | |
 | securityContext | object | `{}` | |
 | serviceAccount.name | string | `""` | |
+| gpu.enabled | bool | `true` | |
+| gpu.runtimeClassName | string | `"nvidia"` | |
 
+
+For containerd runtime :
+
+```
+gpu.runtimeClassName="nvidia"
+```
+
+For docker runtime :
+
+```
+gpu.runtimeClassName="nvidia"
+```
 
 7.  Manual Installation 
 
