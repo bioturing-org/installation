@@ -33,7 +33,7 @@ fi
 
 read -p "Please enter BBrowserX's VERSION (latest): " BBVERSION
 if [ -z "$BBVERSION" ]; then
-    BBVERSION="latest"
+    BBVERSION="1.0.19"
 fi
 
 read -p "Please enter APP-DATA PVC's size (5Gi): " APPDATA_PVC_SIZE
