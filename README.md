@@ -177,6 +177,8 @@ Kubernetes: `>=1.19.0-0`
 | secret.admin.username | string | `admin` | username |
 | secret.admin.password | string | `turing2022` | password |
 | secret.server.useletsencrypt | string | `"false"` | |
+| secret.server.lcall | string | `"C.UTF-8"` | |
+| secret.server.lclang | string | `"C.UTF-8"` | |
 | secret.server.certificate | string | `""` | CRT base64 string |
 | secret.server.key | string | `""` | KEY base64 string |
 | service.type | string | `ClusterIP` | |
