@@ -227,6 +227,7 @@ ADMIN_USERNAME="admin"
 ADMIN_PASSWORD="admin" # <- (CHANGE YOUR PASSWORD IF NECESSARY)
 USELETSENCRYPT="false"
 SVHOST="k8stest.bioturing.com" # <- (CHANGE THIS TO YOUR K8S INGRESS DOMAIN)
+CHART_VERSION="1.0.20" # <- (CHANGE IT IF NECESSARY)
 
 For Microk8s:
 
@@ -239,7 +240,7 @@ microk8s helm3 upgrade --install --set secret.data.bbtoken="${BBTOKEN}" \
  --set secret.server.useletsencrypt="${USELETSENCRYPT}" \
  --set secret.admin.username="${ADMIN_USERNAME}" \
  --set secret.admin.password="${ADMIN_PASSWORD}" \
-bioturing bioturing/ecosystem --version 1.0.19
+bioturing bioturing/ecosystem --version ${CHART_VERSION}
 
 For Vanilla k8s:
 
@@ -252,7 +253,7 @@ helm upgrade --install --set secret.data.bbtoken="${BBTOKEN}" \
  --set secret.server.useletsencrypt="${USELETSENCRYPT}" \
  --set secret.admin.username="${ADMIN_USERNAME}" \
  --set secret.admin.password="${ADMIN_PASSWORD}" \
-bioturing bioturing/ecosystem --version 1.0.19
+bioturing bioturing/ecosystem --version ${CHART_VERSION}
 ```
 
 ## 4. Notices

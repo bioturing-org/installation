@@ -196,6 +196,18 @@ if [ -z "$BBVERSION" ]; then
     BBVERSION="latest"
 fi
 
+# System locale LC_ALL
+read -p "Please enter LC_ALL (C.UTF-8): " LC_ALL
+if [ -z "$LC_ALL" ]; then
+    LC_ALL="C.UTF-8"
+fi
+
+# System locale LC_LANG
+read -p "Please enter LC_LANG (C.UTF-8): " LC_LANG
+if [ -z "$LC_LANG" ]; then
+    LC_LANG="C.UTF-8"
+fi
+
 # Log in to registry.bioturing.com
 echo -e "${_BLUE}Logging in to registry.bioturing.com${_NC}"
 sudo docker login registry.bioturing.com
@@ -210,6 +222,8 @@ if [ "$HAVE_GPU" == "yes" ]; then
         -e BIOTURING_TOKEN="$BIOTURING_TOKEN" \
         -e ADMIN_USERNAME="$ADMIN_USERNAME" \
         -e ADMIN_PASSWORD="$ADMIN_PASSWORD" \
+        -e LC_ALL="$LC_ALL" \
+        -e LC_LANG="$LC_LANG" \
         -p ${HTTP_PORT}:80 \
         -p ${HTTPS_PORT}:443 \
         -v "$APP_DATA_VOLUME":/data/app_data \
@@ -227,6 +241,8 @@ else
         -e BIOTURING_TOKEN="$BIOTURING_TOKEN" \
         -e ADMIN_USERNAME="$ADMIN_USERNAME" \
         -e ADMIN_PASSWORD="$ADMIN_PASSWORD" \
+        -e LC_ALL="$LC_ALL" \
+        -e LC_LANG="$LC_LANG" \
         -p ${HTTP_PORT}:80 \
         -p ${HTTPS_PORT}:443 \
         -v "$APP_DATA_VOLUME":/data/app_data \

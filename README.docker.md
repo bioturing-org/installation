@@ -46,6 +46,8 @@ docker container run -d -t -i \
     -e BIOTURING_TOKEN='USE TOKEN OBTAINED FROM BIOTURING' \
     -e ADMIN_USERNAME='admin' \
     -e ADMIN_PASSWORD='CHANGE YOUR PASSWORD IF NECESSARY' \
+    -e LC_ALL='C.UTF-8' \
+    -e LC_LANG='C.UTF-8' \
     -p 80:80 \
     -p 443:443 \
     -v '/path/to/persistent/storage/':/data/user_data \
@@ -64,6 +66,8 @@ docker container run -d -t -i \
     -e BIOTURING_TOKEN='USE TOKEN OBTAINED FROM BIOTURING' \
     -e ADMIN_USERNAME='admin' \
     -e ADMIN_PASSWORD='CHANGE YOUR PASSWORD IF NECESSARY' \
+    -e LC_ALL='C.UTF-8' \
+    -e LC_LANG='C.UTF-8' \
     -p 80:80 \
     -p 443:443 \
     -v '/path/to/persistent/storage/':/data/user_data \

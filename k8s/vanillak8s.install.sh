@@ -31,9 +31,21 @@ if [ -z "$ADMIN_PASSWORD" ]; then
     ADMIN_PASSWORD="turing2022"
 fi
 
-read -p "Please enter BBrowserX's VERSION (latest): " BBVERSION
+read -p "Please enter BBrowserX's VERSION (1.0.20): " BBVERSION
 if [ -z "$BBVERSION" ]; then
-    BBVERSION="1.0.19"
+    BBVERSION="1.0.20"
+fi
+
+# System locale LC_ALL
+read -p "Please enter LC_ALL (C.UTF-8): " LC_ALL
+if [ -z "$LC_ALL" ]; then
+    LC_ALL="C.UTF-8"
+fi
+
+# System locale LC_LANG
+read -p "Please enter LC_LANG (C.UTF-8): " LC_LANG
+if [ -z "$LC_LANG" ]; then
+    LC_LANG="C.UTF-8"
 fi
 
 read -p "Please enter APP-DATA PVC's size (5Gi): " APPDATA_PVC_SIZE
@@ -129,6 +141,8 @@ else
             --set secret.server.certificate="${SSLCRT}" \
             --set secret.server.key="${SSLKEY}" \
             --set secret.server.useletsencrypt="${USELETSENCRYPT}" \
+            --set secret.server.lcall="${LC_ALL}" \
+            --set secret.server.lclang="${LC_LANG}" \
             --set secret.admin.username="${ADMIN_USERNAME}" \
             --set secret.admin.password="${ADMIN_PASSWORD}" \
             --set persistence.dirs.user.size="${USERDATA_PVC_SIZE}" \
@@ -140,6 +154,8 @@ else
             --set secret.server.certificate="${SSLCRT}" \
             --set secret.server.key="${SSLKEY}" \
             --set secret.server.useletsencrypt="${USELETSENCRYPT}" \
+            --set secret.server.lcall="${LC_ALL}" \
+            --set secret.server.lclang="${LC_LANG}" \
             --set secret.admin.username="${ADMIN_USERNAME}" \
             --set secret.admin.password="${ADMIN_PASSWORD}" \
             --set persistence.dirs.user.size="${USERDATA_PVC_SIZE}" \
