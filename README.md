@@ -171,8 +171,9 @@ Kubernetes: `>=1.19.0-0`
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| image.tag | string | `"1.0.11"` | image tag |
+| image.tag | string | `"1.0.21"` | image tag |
 | secret.data.domain | string | `"bbrowserx.com"` | your domain |
+| secret.data.ssodomains | string | `""` | allow domains |
 | secret.data.bbtoken | string | `""` | bioturing access token |
 | secret.admin.username | string | `admin` | username |
 | secret.admin.password | string | `turing2022` | password |
@@ -185,8 +186,10 @@ Kubernetes: `>=1.19.0-0`
 | service.ports.http.port | int | 80 | |
 | service.ports.https.port | int | 443 | |
 | persistence.dirs.app.size | string | `5Gi` | APP size |
+| persistence.dirs.app.storageClass | string | `""` | |
 | persistence.dirs.user.size | string | `5Gi` | USER size |
-| persistence.storageClass | string | `""` | |
+| persistence.dirs.user.storageClass | string | `""` | |
+| persistence.dirs.user.existingClaim | bool | `true` | |
 | ingress.enabled | bool | `true` | |
 | ingress.className | string | `""` | |
 | ingress.annotations | object | `{}` | |
