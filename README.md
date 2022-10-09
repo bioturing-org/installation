@@ -189,7 +189,7 @@ Kubernetes: `>=1.19.0-0`
 | persistence.dirs.app.storageClass | string | `""` | |
 | persistence.dirs.user.size | string | `5Gi` | USER size |
 | persistence.dirs.user.storageClass | string | `""` | |
-| persistence.dirs.user.existingClaim | bool | `true` | |
+| persistence.dirs.user.existingClaim | bool | `false` | |
 | ingress.enabled | bool | `true` | |
 | ingress.className | string | `""` | |
 | ingress.annotations | object | `{}` | |
