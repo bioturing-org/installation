@@ -175,6 +175,7 @@ Kubernetes: `>=1.19.0-0`
 | secret.data.domain | string | `"bbrowserx.com"` | your domain |
 | secret.data.ssodomains | string | `""` | allow domains |
 | secret.data.bbtoken | string | `""` | bioturing access token |
+| secret.data.allowips | string | `""` | allow ips |
 | secret.admin.username | string | `admin` | username |
 | secret.admin.password | string | `turing2022` | password |
 | secret.server.useletsencrypt | string | `"false"` | |
@@ -232,7 +233,7 @@ ADMIN_USERNAME="admin"
 ADMIN_PASSWORD="admin" # <- (CHANGE YOUR PASSWORD IF NECESSARY)
 USELETSENCRYPT="false"
 SVHOST="k8stest.bioturing.com" # <- (CHANGE THIS TO YOUR K8S INGRESS DOMAIN)
-CHART_VERSION="1.0.20" # <- (CHANGE IT IF NECESSARY)
+CHART_VERSION="1.0.23" # <- (CHANGE IT IF NECESSARY)
 LC_ALL="C.UTF-8" # <- (CHANGE IT IF NECESSARY)
 LC_LANG="C.UTF-8" # <- (CHANGE IT IF NECESSARY)
 
