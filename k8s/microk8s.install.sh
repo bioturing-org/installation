@@ -58,6 +58,11 @@ if [ -z "$USERDATA_PVC_SIZE" ]; then
     USERDATA_PVC_SIZE="5Gi"
 fi
 
+read -p "Please enter SHM's size (1Gi): " SHM_SIZE
+if [ -z "$SHM_SIZE" ]; then
+    SHM_SIZE="1Gi"
+fi
+
 SSLCRT=""
 SSLKEY=""
 read -p "Use lets-encrypt SSL (must be public your domain), [y, n]: " USELETSENCRYPT
@@ -145,6 +150,7 @@ else
             --set secret.admin.password="${ADMIN_PASSWORD}" \
             --set persistence.dirs.user.size="${USERDATA_PVC_SIZE}" \
             --set persistence.dirs.app.size="${APPDATA_PVC_SIZE}" \
+            --set persistence.dirs.shm.size="${SHM_SIZE}" \
             bioturing bioturing/ecosystem --version ${BBVERSION}
     else
         microk8s helm3 upgrade --install --set secret.data.bbtoken="${BBTOKEN}" \
@@ -158,6 +164,7 @@ else
             --set secret.admin.password="${ADMIN_PASSWORD}" \
             --set persistence.dirs.user.size="${USERDATA_PVC_SIZE}" \
             --set persistence.dirs.app.size="${APPDATA_PVC_SIZE}" \
+            --set persistence.dirs.shm.size="${SHM_SIZE}" \
             --namespace ${K8S_NAMESPACE} \
             bioturing bioturing/ecosystem --version ${BBVERSION} \
             --create-namespace

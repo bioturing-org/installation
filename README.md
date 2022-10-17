@@ -189,6 +189,7 @@ Kubernetes: `>=1.19.0-0`
 | persistence.dirs.app.size | string | `5Gi` | APP size |
 | persistence.dirs.app.storageClass | string | `""` | |
 | persistence.dirs.user.size | string | `5Gi` | USER size |
+| persistence.dirs.shm.size | string | `1Gi` | SHM size |
 | persistence.dirs.user.storageClass | string | `""` | |
 | persistence.dirs.user.existingClaim | bool | `false` | |
 | ingress.enabled | bool | `true` | |
@@ -233,6 +234,9 @@ ADMIN_USERNAME="admin"
 ADMIN_PASSWORD="admin" # <- (CHANGE YOUR PASSWORD IF NECESSARY)
 USELETSENCRYPT="false"
 SVHOST="k8stest.bioturing.com" # <- (CHANGE THIS TO YOUR K8S INGRESS DOMAIN)
+APP_DATA_SIZE="50Gi" # <- (CHANGE THIS TO YOUR APP-PVC SIZE)
+USER_DATA_SIZE="100Gi" # <- (CHANGE THIS TO YOUR USER-PVC SIZE)
+SHM_SIZE="64Gi" # <- (CHANGE THIS TO YOUR SHM SIZE)
 CHART_VERSION="1.0.23" # <- (CHANGE IT IF NECESSARY)
 LC_ALL="C.UTF-8" # <- (CHANGE IT IF NECESSARY)
 LC_LANG="C.UTF-8" # <- (CHANGE IT IF NECESSARY)
@@ -250,6 +254,9 @@ microk8s helm3 upgrade --install --set secret.data.bbtoken="${BBTOKEN}" \
  --set secret.server.lclang="${LC_LANG}" \
  --set secret.admin.username="${ADMIN_USERNAME}" \
  --set secret.admin.password="${ADMIN_PASSWORD}" \
+ --set persistence.dirs.app.size="${APP_DATA_SIZE}" \
+ --set persistence.dirs.user.size="${USER_DATA_SIZE}" \
+ --set persistence.dirs.shm.size="${SHM_SIZE}" \
 bioturing bioturing/ecosystem --version ${CHART_VERSION}
 
 For Vanilla k8s:
@@ -265,6 +272,9 @@ helm upgrade --install --set secret.data.bbtoken="${BBTOKEN}" \
  --set secret.server.lclang="${LC_LANG}" \
  --set secret.admin.username="${ADMIN_USERNAME}" \
  --set secret.admin.password="${ADMIN_PASSWORD}" \
+ --set persistence.dirs.app.size="${APP_DATA_SIZE}" \
+ --set persistence.dirs.user.size="${USER_DATA_SIZE}" \
+ --set persistence.dirs.shm.size="${SHM_SIZE}" \
 bioturing bioturing/ecosystem --version ${CHART_VERSION}
 ```
 
