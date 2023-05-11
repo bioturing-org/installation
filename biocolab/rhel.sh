@@ -34,7 +34,7 @@ if [ -z "$AGREE_CA" ] || [ "$AGREE_CA" != "y" ]; then
 else
     sudo yum install curl wget ca-certificates -y
     echo -e "${_BLUE}Installing trusted SSL certificates${_NC}\n"
-    sudo bash ../cert/rhel.sh
+    sudo bash ./cert/rhel.sh
 fi
 
 # Input BioColab Token
@@ -312,6 +312,8 @@ if [ "$HAVE_GPU" == "yes" ]; then
         -e COLAB_TOKEN="$BIOCOLAB_TOKEN" \
         -e ADMIN_USERNAME="$ADMIN_USERNAME" \
         -e ADMIN_PASSWORD="$ADMIN_PASSWORD" \
+        -e HOST="0.0.0.0" \
+        -e PORT="11123" \
         -e PG_HOST="$HOST" \
         -e PG_DATABASE="$PG_DATABASE" \
         -e PG_USERNAME="$PG_USERNAME" \
@@ -347,6 +349,8 @@ echo -e "${_RED}NO_GPU${_NC}\n"
         -e COLAB_TOKEN="$BIOCOLAB_TOKEN" \
         -e ADMIN_USERNAME="$ADMIN_USERNAME" \
         -e ADMIN_PASSWORD="$ADMIN_PASSWORD" \
+        -e HOST="0.0.0.0" \
+        -e PORT="11123" \
         -e PG_HOST="$HOST" \
         -e PG_DATABASE="$PG_DATABASE" \
         -e PG_USERNAME="$PG_USERNAME" \
