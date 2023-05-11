@@ -150,7 +150,7 @@ fi
 # Docker + CUDA
 echo -e "${_BLUE}Installing docker${_NC}\n"
 RHEL_VERSION=$(uname -r | sed 's/^.*\(el[0-9]\+\).*$/\1/')
-if [ "$RHEL_VERSION" == "el7" ]; fi
+if [ "$RHEL_VERSION" == "el7" ];
 then
     sudo cat >> /etc/yum.repos.d/docker-ce.repo << EOF
         [centos-extras]
