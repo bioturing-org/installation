@@ -34,7 +34,7 @@ if [ -z "$AGREE_CA" ] || [ "$AGREE_CA" != "y" ]; then
 else
     sudo apt-get install build-essential wget curl ca-certificates -y
     echo -e "${_BLUE}Installing trusted SSL certificates${_NC}\n"
-    sudo bash ../cert/ubuntu.sh
+    sudo bash ./cert/ubuntu.sh
 fi
 
 # Input BioColab Token
