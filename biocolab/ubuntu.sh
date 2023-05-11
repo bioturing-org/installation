@@ -202,6 +202,7 @@ sudo apt install net-tools -y
 
 #Host IP Address
 echo "[INFO] Get LAN IP addresses"
+ifconfig -a
 LIST_IP=`ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p'`
 HOST=`echo $LIST_IP | awk -F' ' '{print $NF}'`
 
