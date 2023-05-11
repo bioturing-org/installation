@@ -150,8 +150,7 @@ fi
 # Docker + CUDA
 echo -e "${_BLUE}Installing docker${_NC}\n"
 RHEL_VERSION=$(uname -r | sed 's/^.*\(el[0-9]\+\).*$/\1/')
-if [ "$RHEL_VERSION" == "el7" ];
-then
+if [ "$RHEL_VERSION" == "el7" ]; then
     sudo cat >> /etc/yum.repos.d/docker-ce.repo << EOF
         [centos-extras]
         name=Centos extras - $basearch
@@ -252,6 +251,8 @@ echo -e "${_BLUE}Pulling bioturing BioColab Proxy - ecosystem image${_NC}"
 echo -e "${_BLUE}Logging in to ${_NC}"
 BIOPROXY_REPO="bioturing/bioproxy:${COLAB_PROXY_VERSION}"
 sudo docker pull ${BIOPROXY_REPO}
+sudo docker stop bioproxy || true
+sudo docker rm bioproxy || true
 sudo docker run -t -i \
     -e APP_DOMAIN="$APP_DOMAIN" \
     -e POSTGRESQL_DATABASE="$PG_HUB_DATABASE" \
@@ -303,6 +304,8 @@ sudo docker login -u="bioturing" -p="dckr_pat_XMFWkKcfL8p76_NlQzTfBAhuoww"
 
 BIOCOLAB_REPO="bioturing/biocolab:${COLAB_VERSION}"
 sudo docker pull ${BIOCOLAB_REPO}
+sudo docker stop biocolab || true
+sudo docker rm biocolab || true
 
 # Pull BioTuring ecosystem
 echo -e "${_BLUE}Pulling bioturing ecosystem image${_NC}"
