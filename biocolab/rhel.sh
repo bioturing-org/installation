@@ -235,6 +235,15 @@ if [ -z "$COLAB_PROXY_VERSION" ]; then
     COLAB_VERSION="1.0.1"
 fi
 
+# Need install NFS server
+NFS_PORT_MAP=""
+read -p "Install NFS server [y, n]: " AGREE_NFS
+if [ -z "$AGREE_NFS" ] || [ "$AGREE_NFS" != "y" ]; then
+    NFS_PORT_MAP=""
+else
+    NFS_PORT_MAP="-p 111:111"
+fi
+
 echo -e "\n HTTP_SERVER_PORT : $HTTP_PORT"
 echo -e "\n HTTPS_SERVER_PORT : $HTTPS_PORT"
 echo -e "\n METADATA_DIR : ${METADATA_DIR}"
@@ -276,8 +285,7 @@ sudo docker run -t -i \
     -p 6379:6379 \
     -p 9090:9090 \
     -p 9091:9091 \
-    -p 111:111 \
-    -p 2049:2049 \
+    -p 2049:2049 ${NFS_PORT_MAP} \
     -p 32767:32767 \
     -p 32765:32765 \
     -v ${METADATA_DIR}:/bitnami/postgresql \

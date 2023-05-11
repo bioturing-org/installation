@@ -241,6 +241,15 @@ echo -e "\n APP_DOMAIN : $APP_DOMAIN"
 echo -e "\n HOST: $HOST"
 echo -e "\n REDIS_PASSWORD:  $REDIS_PASSWORD"
 
+# Need install NFS server
+NFS_PORT_MAP=""
+read -p "Install NFS server [y, n]: " AGREE_NFS
+if [ -z "$AGREE_NFS" ] || [ "$AGREE_NFS" != "y" ]; then
+    NFS_PORT_MAP=""
+else
+    NFS_PORT_MAP="-p 111:111"
+fi
+
 # Login to bioturing.com
 echo -e "${_BLUE}Logging in to bioturing.com${_NC}"
 sudo docker login -u="bioturing" -p="dckr_pat_XMFWkKcfL8p76_NlQzTfBAhuoww"
@@ -249,6 +258,9 @@ echo -e "${_BLUE}Pulling bioturing BioColab Proxy - ecosystem image${_NC}"
 echo -e "${_BLUE}Logging in to ${_NC}"
 BIOPROXY_REPO="bioturing/bioproxy:${COLAB_PROXY_VERSION}"
 sudo docker pull ${BIOPROXY_REPO}
+sudo docker stop bioproxy || true
+sudo docker rm bioproxy || true
+
 sudo docker run -t -i \
     -e APP_DOMAIN="$APP_DOMAIN" \
     -e POSTGRESQL_DATABASE="$PG_HUB_DATABASE" \
@@ -272,8 +284,7 @@ sudo docker run -t -i \
     -p 6379:6379 \
     -p 9090:9090 \
     -p 9091:9091 \
-    -p 111:111 \
-    -p 2049:2049 \
+    -p 2049:2049 ${NFS_PORT_MAP} \
     -p 32767:32767 \
     -p 32765:32765 \
     -v ${METADATA_DIR}:/bitnami/postgresql \
@@ -300,6 +311,8 @@ sudo docker login -u="bioturing" -p="dckr_pat_XMFWkKcfL8p76_NlQzTfBAhuoww"
 
 BIOCOLAB_REPO="bioturing/biocolab:${COLAB_VERSION}"
 sudo docker pull ${BIOCOLAB_REPO}
+sudo docker stop biocolab || true
+sudo docker rm biocolab || true
 
 # Pull BioTuring ecosystem
 echo -e "${_BLUE}Pulling bioturing ecosystem image${_NC}"
