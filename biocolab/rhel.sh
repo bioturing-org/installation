@@ -263,6 +263,7 @@ sudo docker pull ${BIOPROXY_REPO}
 sudo docker stop bioproxy || true
 sudo docker rm bioproxy || true
 sudo docker run -t -i \
+    --add-host ${APP_DOMAIN}:${HOST} \
     -e APP_DOMAIN="$APP_DOMAIN" \
     -e POSTGRESQL_DATABASE="$PG_HUB_DATABASE" \
     -e POSTGRESQL_USERNAME="$PG_USERNAME" \
@@ -320,6 +321,7 @@ echo -e "${_BLUE}Pulling bioturing ecosystem image${_NC}"
 if [ "$HAVE_GPU" == "yes" ]; then
     echo -e "${_BLUE}HAVE_GPU${_NC}\n"
     sudo docker run -t -i \
+        --add-host ${APP_DOMAIN}:${HOST} \
         -e APP_DOMAIN_URL="$APP_DOMAIN" \
         -e COLAB_TOKEN="$BIOCOLAB_TOKEN" \
         -e ADMIN_USERNAME="$ADMIN_USERNAME" \
@@ -357,6 +359,7 @@ if [ "$HAVE_GPU" == "yes" ]; then
 else
 echo -e "${_RED}NO_GPU${_NC}\n"
     sudo docker run -t -i \
+        --add-host ${APP_DOMAIN}:${HOST} \
         -e APP_DOMAIN_URL="$APP_DOMAIN" \
         -e COLAB_TOKEN="$BIOCOLAB_TOKEN" \
         -e ADMIN_USERNAME="$ADMIN_USERNAME" \
