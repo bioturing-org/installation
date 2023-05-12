@@ -260,8 +260,18 @@ echo -e "${_BLUE}Pulling bioturing BioColab Proxy - ecosystem image${_NC}"
 echo -e "${_BLUE}Logging in to ${_NC}"
 BIOPROXY_REPO="bioturing/bioproxy:${COLAB_PROXY_VERSION}"
 sudo docker pull ${BIOPROXY_REPO}
-sudo docker stop bioproxy || true
-sudo docker rm bioproxy || true
+
+
+count_biproxy=`docker ps -s | grep bioproxy | wc -l`
+
+if [ $count_biproxy -ge 1 ]
+  then 
+     sudo docker stop bioproxy || true
+     sudo docker rm bioproxy || true
+  else
+     echo "No any process for Bioproxy is running previously."
+fi
+
 sudo docker run -t -i \
     --add-host ${APP_DOMAIN}:${HOST} \
     -e APP_DOMAIN="$APP_DOMAIN" \
@@ -313,8 +323,16 @@ sudo docker login -u="bioturing" -p="dckr_pat_XMFWkKcfL8p76_NlQzTfBAhuoww"
 
 BIOCOLAB_REPO="bioturing/biocolab:${COLAB_VERSION}"
 sudo docker pull ${BIOCOLAB_REPO}
-sudo docker stop biocolab || true
-sudo docker rm biocolab || true
+
+count_bicolab=`docker ps -s | grep biocolab | wc -l`
+
+if [ $count_bicolab -ge 1 ]
+  then
+     sudo docker stop biocolab || true
+     sudo docker rm biocolab || true
+  else
+     echo "No any process for Biocolab is running previously."
+fi
 
 # Pull BioTuring ecosystem
 echo -e "${_BLUE}Pulling bioturing ecosystem image${_NC}"
