@@ -274,7 +274,7 @@ sudo docker run -t -i \
     -e HTTPS_SERVER_PORT="$HTTPS_PORT" \
     -e MEMCACHED_PORT=11211 \
     -e REDIS_PORT=6379 \
-    -e DEBUG_MODE="false" \
+    -e DEBUG_MODE="false" \pg_port
     -e ENABLE_HTTPS="false" \
     -e USE_LETSENCRYPT="false" \
     -e COLAB_LIST_SERVER="$HOST:11123" \
