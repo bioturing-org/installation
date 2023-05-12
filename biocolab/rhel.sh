@@ -261,7 +261,7 @@ echo -e "${_BLUE}Logging in to ${_NC}"
 BIOPROXY_REPO="bioturing/bioproxy:${COLAB_PROXY_VERSION}"
 sudo docker pull ${BIOPROXY_REPO}
 
-
+##
 count_biproxy=`docker ps -s | grep bioproxy | wc -l`
 
 if [ $count_biproxy -ge 1 ]
