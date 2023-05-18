@@ -104,7 +104,7 @@ fi
 
 # Input SSL volume using bioproxy => /home/configs
 echo -e "\n"
-read -p "ssl volume (this directory must contain two files: tls.crt and tls.key from your SSL certificate for HTTPS /biocolab/config --> /home/configs): " SSL_VOLUME
+read -p "ssl volume (this directory must contain two files: tls.crt and tls.key from your SSL certificate for HTTPS /biocolab/configs --> /home/configs): " SSL_VOLUME
 if [ ! -d "$SSL_VOLUME" ];
 then
     echo -e "${_RED}Directory DOES NOT exist...${_NC}"
