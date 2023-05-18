@@ -26,7 +26,7 @@ _NC='\033[0m' # No Color
 _MINIMUM_ROOT_SIZE=64424509440 # 60GB
 
 echo -e "${_BLUE}BioColab UBUNTU installation version${_NC} ${_GREEN}stable${_NC}\n"
-
+echo -e "\n"
 # Cert before install other packages in OS
 read -p "Install Self-Signed CA Certificate [y, n]: " AGREE_CA
 if [ -z "$AGREE_CA" ] || [ "$AGREE_CA" != "y" ]; then
@@ -38,6 +38,7 @@ else
 fi
 
 # Input BioColab Token
+echo -e "\n"
 read -p "BioColab token (please contact support@bioturing.com for a token): " BIOCOLAB_TOKEN
 if [ -z "$BIOCOLAB_TOKEN" ];
 then
@@ -46,6 +47,7 @@ then
 fi
 
 # Input domain name
+echo -e "\n"
 read -p "Domain name (example: biocolab.<Your Domain>.com): " APP_DOMAIN
 if [ -z "$APP_DOMAIN" ];
 then
@@ -54,6 +56,7 @@ then
 fi
 
 # Input administrator username
+echo -e "\n"
 read -p "Administrator username (example: admin): " ADMIN_USERNAME
 if [ -z "$ADMIN_USERNAME" ];
 then
@@ -62,6 +65,7 @@ then
 fi
 
 # Input administrator password
+echo -e "\n"
 read -s -p "Administrator password: " ADMIN_PASSWORD
 if [ -z "$ADMIN_PASSWORD" ];
 then
@@ -70,7 +74,8 @@ then
 fi
 
 # Confirm administrator password
-read -p "Confirm administrator password: " ADMIN_PASSWORD_CONFIRM
+echo -e "\n"
+read -s -p "Confirm administrator password: " ADMIN_PASSWORD_CONFIRM
 if [ "$ADMIN_PASSWORD" != "$ADMIN_PASSWORD_CONFIRM" ];
 then
     echo -e "${_RED}Password does not match. Exiting...${_NC}"
@@ -89,7 +94,8 @@ REDIS_PASSWORD="ca39c850e2d845202839be08e8684e4f"
 #---------------------------------
 
 # Input metadata volume using bioproxy => /bitnami/postgresql
-read -p "Metadata volume (persistent volume to store metadata /bitnami/postgresql): " METADATA_DIR
+echo -e "\n"
+read -p "Metadata volume (persistent volume to store metadata /biocolab/metadata --> /bitnami/postgresql): " METADATA_DIR
 if [ ! -d "$METADATA_DIR" ];
 then
     echo -e "${_RED}Directory DOES NOT exist. Exiting...${_NC}"
@@ -97,7 +103,8 @@ then
 fi
 
 # Input SSL volume using bioproxy => /home/configs
-read -p "ssl volume (this directory must contain two files: tls.crt and tls.key from your SSL certificate for HTTPS /home/configs): " SSL_VOLUME
+echo -e "\n"
+read -p "ssl volume (this directory must contain two files: tls.crt and tls.key from your SSL certificate for HTTPS /biocolab/config --> /home/configs): " SSL_VOLUME
 if [ ! -d "$SSL_VOLUME" ];
 then
     echo -e "${_RED}Directory DOES NOT exist...${_NC}"
@@ -105,7 +112,8 @@ then
 fi
 
 # Input user data volume => /home
-read -p "user_data volume (persistent volume to store user data /home): " DATA_PATH
+echo -e "\n"
+read -p "user_data volume (persistent volume to store user data /biocolab/userdata --> /home): " DATA_PATH
 if [ ! -d "$DATA_PATH" ];
 then
     echo -e "${_RED}Directory DOES NOT exist. Exiting...${_NC}"
@@ -113,7 +121,8 @@ then
 fi
 
 # Input application data volume => /appdata
-read -p "app_data volume (persistent volume to store app data /appdata): " APP_PATH
+echo -e "\n"
+read -p "app_data volume (persistent volume to store app data /biocolab/appdata --> /appdata): " APP_PATH
 if [ ! -d "$APP_PATH" ];
 then
     echo -e "${_RED}Directory DOES NOT exist. Exiting...${_NC}"
@@ -121,6 +130,7 @@ then
 fi
 
 # Expose ports
+echo -e "\n"
 read -p "Please input expose HTTP port (80): " HTTP_PORT
 if [ -z "$HTTP_PORT" ]; then
     HTTP_PORT=80
@@ -134,6 +144,7 @@ else
     exit 1
 fi
 
+echo -e "\n"
 read -p "Please input expose HTTPS port (443): " HTTPS_PORT
 if [ -z "$HTTPS_PORT" ]; then
     HTTPS_PORT=443
@@ -148,12 +159,14 @@ else
 fi
 
 # Docker + CUDA
+echo -e "\n"
 echo -e "${_BLUE}Installing docker${_NC}\n"
 curl https://get.docker.com | sh
 sudo systemctl --now enable docker
 sudo systemctl start docker
 
 # Input GPU
+echo -e "\n"
 read -p "Do you have GPU on your machine: [y/n]" HAVE_GPU
 if [ -z "$HAVE_GPU" ] || [ "$HAVE_GPU" != "y" ];
 then
@@ -196,6 +209,7 @@ else
 fi
 
 # Basic package
+echo -e "\n"
 echo -e "${_BLUE}Installing base package${_NC}\n"
 sudo apt-get update
 sudo apt install net-tools -y
@@ -207,6 +221,7 @@ LIST_IP=`ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*
 HOST=`echo $LIST_IP | awk -F' ' '{print $NF}'`
 
 echo "Given IP $HOST was detected. Kindly provide ethernet IP. You might have multiple IP's"
+echo -e "\n"
 read -p "Would you like to change IP[${HOST}] [y, n]: " AGREE_IP_CHANGE
 if [ -z "$AGREE_IP_CHANGE" ] || [ "$AGREE_IP_CHANGE" != "y" ]; then
     echo "Host IP will be $HOST"
@@ -228,6 +243,7 @@ then
 fi
 
 # Check Version
+echo -e "\n"
 read -p "Please enter Biocolab's Proxy 1.0.2 (latest): " COLAB_PROXY_VERSION
 if [ -z "$COLAB_PROXY_VERSION" ]; then
     COLAB_PROXY_VERSION="1.0.2"
@@ -242,6 +258,7 @@ echo -e "\n HOST: $HOST"
 echo -e "\n REDIS_PASSWORD:  $REDIS_PASSWORD"
 
 # Need install NFS server
+echo -e "\n"
 NFS_PORT_MAP=""
 read -p "Install NFS server [y, n]: " AGREE_NFS
 if [ -z "$AGREE_NFS" ] || [ "$AGREE_NFS" != "y" ]; then
@@ -251,6 +268,7 @@ else
 fi
 
 # Login to bioturing.com
+echo -e "\n"
 echo -e "${_BLUE}Logging in to bioturing.com${_NC}"
 sudo docker login -u="bioturing" -p="dckr_pat_XMFWkKcfL8p76_NlQzTfBAhuoww"
 
@@ -283,7 +301,7 @@ sudo docker run -t -i \
     -e HTTPS_SERVER_PORT="$HTTPS_PORT" \
     -e MEMCACHED_PORT=11211 \
     -e REDIS_PORT=6379 \
-    -e DEBUG_MODE="false" \pg_port
+    -e DEBUG_MODE="false" \
     -e ENABLE_HTTPS="false" \
     -e USE_LETSENCRYPT="false" \
     -e COLAB_LIST_SERVER="$HOST:11123" \
@@ -311,9 +329,9 @@ sleep 120
 
 # Check Version
 
-read -p "Please enter Biocolab's VERSION 1.0.2 (latest): " COLAB_VERSION
+read -p "Please enter Biocolab's VERSION 1.0.6 (latest): " COLAB_VERSION
 if [ -z "$COLAB_VERSION" ]; then
-    COLAB_VERSION="1.0.2"
+    COLAB_VERSION="1.0.6"
 fi
 
 # Login to bioturing.com
