@@ -37,6 +37,73 @@ else
     sudo bash ./cert/ubuntu.sh
 fi
 
+# Input Postgres + REDIS variable
+#---------------------------------
+
+PG_DATABASE="biocolab"
+PG_HUB_DATABASE="biocohub"
+PG_USERNAME="postgres"
+PG_PASSWORD="710e93bd11212cea938d87afcc1227e3"
+REDIS_PASSWORD="ca39c850e2d845202839be08e8684e4f"
+
+#---------------------------------
+
+# Input metadata volume using bioproxy => /bitnami/postgresql
+echo -e "\n"
+read -p "Metadata volume (persistent volume to store metadata /biocolab/metadata --> /bitnami/postgresql): " METADATA_DIR
+if [ -z "$METADATA_DIR" ];
+then
+    METADATA_DIR="/biocolab/metadata"
+fi
+echo -e "METADATA_DIR=${METADATA_DIR} \n"
+if [ ! -d "$METADATA_DIR" ];
+then
+    echo -e "${_RED}Directory DOES NOT exist. Exiting...${_NC}"
+    exit 1
+fi
+
+# Input CONFIG_VOLUME using bioproxy => /home/configs
+echo -e "\n"
+read -p "configs volume (this directory must contain two files: tls.crt and tls.key from your SSL certificate for HTTPS /biocolab/configs --> /home/configs): " CONFIG_VOLUME
+if [ -z "$CONFIG_VOLUME" ];
+then
+    CONFIG_VOLUME="/biocolab/configs"
+fi
+echo -e "CONFIG_VOLUME=${CONFIG_VOLUME} \n"
+if [ ! -d "$CONFIG_VOLUME" ];
+then
+    echo -e "${_RED}Directory DOES NOT exist...${_NC}"
+    exit 1
+fi
+
+# Input user data volume => /home
+echo -e "\n"
+read -p "user_data volume (persistent volume to store user data /biocolab/userdata --> /home): " USERDATA_PATH
+if [ -z "$USERDATA_PATH" ];
+then
+    USERDATA_PATH="/biocolab/userdata"
+fi
+echo -e "USERDATA_PATH=${USERDATA_PATH} \n"
+if [ ! -d "$USERDATA_PATH" ];
+then
+    echo -e "${_RED}Directory DOES NOT exist. Exiting...${_NC}"
+    exit 1
+fi
+
+# Input application data volume => /appdata
+echo -e "\n"
+read -p "app_data volume (persistent volume to store app data /biocolab/appdata --> /appdata): " APP_PATH
+if [ -z "$APP_PATH" ];
+then
+    APP_PATH="/biocolab/appdata"
+fi
+echo -e "APP_PATH=${APP_PATH} \n"
+if [ ! -d "$APP_PATH" ];
+then
+    echo -e "${_RED}Directory DOES NOT exist. Exiting...${_NC}"
+    exit 1
+fi
+
 # Input BioColab Token
 echo -e "\n"
 read -p "BioColab token (please contact support@bioturing.com for a token): " BIOCOLAB_TOKEN
@@ -79,53 +146,6 @@ read -s -p "Confirm administrator password: " ADMIN_PASSWORD_CONFIRM
 if [ "$ADMIN_PASSWORD" != "$ADMIN_PASSWORD_CONFIRM" ];
 then
     echo -e "${_RED}Password does not match. Exiting...${_NC}"
-    exit 1
-fi
-
-# Input Postgres + REDIS variable
-#---------------------------------
-
-PG_DATABASE="biocolab"
-PG_HUB_DATABASE="biocohub"
-PG_USERNAME="postgres"
-PG_PASSWORD="710e93bd11212cea938d87afcc1227e3"
-REDIS_PASSWORD="ca39c850e2d845202839be08e8684e4f"
-
-#---------------------------------
-
-# Input metadata volume using bioproxy => /bitnami/postgresql
-echo -e "\n"
-read -p "Metadata volume (persistent volume to store metadata /biocolab/metadata --> /bitnami/postgresql): " METADATA_DIR
-if [ ! -d "$METADATA_DIR" ];
-then
-    echo -e "${_RED}Directory DOES NOT exist. Exiting...${_NC}"
-    exit 1
-fi
-
-# Input SSL volume using bioproxy => /home/configs
-echo -e "\n"
-read -p "ssl volume (this directory must contain two files: tls.crt and tls.key from your SSL certificate for HTTPS /biocolab/configs --> /home/configs): " SSL_VOLUME
-if [ ! -d "$SSL_VOLUME" ];
-then
-    echo -e "${_RED}Directory DOES NOT exist...${_NC}"
-    exit 1
-fi
-
-# Input user data volume => /home
-echo -e "\n"
-read -p "user_data volume (persistent volume to store user data /biocolab/userdata --> /home): " DATA_PATH
-if [ ! -d "$DATA_PATH" ];
-then
-    echo -e "${_RED}Directory DOES NOT exist. Exiting...${_NC}"
-    exit 1
-fi
-
-# Input application data volume => /appdata
-echo -e "\n"
-read -p "app_data volume (persistent volume to store app data /biocolab/appdata --> /appdata): " APP_PATH
-if [ ! -d "$APP_PATH" ];
-then
-    echo -e "${_RED}Directory DOES NOT exist. Exiting...${_NC}"
     exit 1
 fi
 
@@ -244,9 +264,9 @@ fi
 
 # Check Version
 echo -e "\n"
-read -p "Please enter Biocolab's Proxy 1.0.2 (latest): " COLAB_PROXY_VERSION
+read -p "Please enter Biocolab's Proxy 1.0.8 (latest): " COLAB_PROXY_VERSION
 if [ -z "$COLAB_PROXY_VERSION" ]; then
-    COLAB_PROXY_VERSION="1.0.2"
+    COLAB_PROXY_VERSION="1.0.8"
 fi
 
 echo -e "\n HTTP_SERVER_PORT : $HTTP_PORT"
@@ -302,7 +322,7 @@ sudo docker run -t -i \
     -e MEMCACHED_PORT=11211 \
     -e REDIS_PORT=6379 \
     -e DEBUG_MODE="false" \
-    -e ENABLE_HTTPS="false" \
+    -e ENABLE_HTTPS="true" \
     -e USE_LETSENCRYPT="false" \
     -e COLAB_LIST_SERVER="$HOST:11123" \
     -p ${HTTP_PORT}:80 \
@@ -316,7 +336,7 @@ sudo docker run -t -i \
     -p 32767:32767 \
     -p 32765:32765 \
     -v ${METADATA_DIR}:/bitnami/postgresql \
-    -v ${SSL_VOLUME}:/home/configs \
+    -v ${CONFIG_VOLUME}:/home/configs \
     --name bioproxy \
     --cap-add SYS_ADMIN  \
     --cap-add NET_ADMIN  \
@@ -329,9 +349,9 @@ sleep 120
 
 # Check Version
 
-read -p "Please enter Biocolab's VERSION 1.0.6 (latest): " COLAB_VERSION
+read -p "Please enter Biocolab's VERSION 1.0.8 (latest): " COLAB_VERSION
 if [ -z "$COLAB_VERSION" ]; then
-    COLAB_VERSION="1.0.6"
+    COLAB_VERSION="1.0.8"
 fi
 
 # Login to bioturing.com
@@ -357,7 +377,7 @@ if [ "$HAVE_GPU" == "yes" ]; then
     echo -e "${_BLUE}HAVE_GPU${_NC}\n"
     sudo docker run -t -i \
         --add-host ${APP_DOMAIN}:${HOST} \
-        -e APP_DOMAIN_URL="$APP_DOMAIN" \
+        -e APP_DOMAIN_URL="https://${APP_DOMAIN}" \
         -e COLAB_TOKEN="$BIOCOLAB_TOKEN" \
         -e ADMIN_USERNAME="$ADMIN_USERNAME" \
         -e ADMIN_PASSWORD="$ADMIN_PASSWORD" \
@@ -385,17 +405,17 @@ if [ "$HAVE_GPU" == "yes" ]; then
         -p 11300:11300 \
         -p 6800:6800 \
         -v "$APP_PATH":/appdata \
-        -v "$DATA_PATH":/home \
+        -v "$USERDATA_PATH":/home \
         --name biocolab \
         --gpus all \
         --cap-add SYS_ADMIN  \
         --cap-add NET_ADMIN  \
         -d ${BIOCOLAB_REPO}
 else
-echo -e "${_RED}NO_GPU${_NC}\n"
+    echo -e "${_RED}NO_GPU${_NC}\n"
     sudo docker run -t -i \
         --add-host ${APP_DOMAIN}:${HOST} \
-        -e APP_DOMAIN_URL="$APP_DOMAIN" \
+        -e APP_DOMAIN_URL="https://${APP_DOMAIN}" \
         -e COLAB_TOKEN="$BIOCOLAB_TOKEN" \
         -e ADMIN_USERNAME="$ADMIN_USERNAME" \
         -e ADMIN_PASSWORD="$ADMIN_PASSWORD" \
@@ -423,7 +443,7 @@ echo -e "${_RED}NO_GPU${_NC}\n"
         -p 11300:11300 \
         -p 6800:6800 \
         -v "$APP_PATH":/appdata \
-        -v "$DATA_PATH":/home \
+        -v "$USERDATA_PATH":/home \
         --name biocolab \
         --cap-add SYS_ADMIN  \
         --cap-add NET_ADMIN  \
