@@ -241,8 +241,12 @@ LIST_IP=`ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*
 HOST=`echo $LIST_IP | awk -F' ' '{print $NF}'`
 
 echo "Given IP $HOST was detected. Kindly provide ethernet IP. You might have multiple IP's"
+
 echo -e "\n"
+
 read -p "Would you like to change IP[${HOST}] [y, n]: " AGREE_IP_CHANGE
+echo -e "\n"
+
 if [ -z "$AGREE_IP_CHANGE" ] || [ "$AGREE_IP_CHANGE" != "y" ]; then
     echo "Host IP will be $HOST"
 else
