@@ -304,6 +304,8 @@ sudo docker pull ${BIOPROXY_REPO}
 ## stop and remove previous instance
 sudo docker stop bioproxy || true
 sudo docker rm bioproxy || true
+sudo docker container stop bioproxy || true
+sudo docker container rm bioproxy || true
 
 sudo docker run -t -i \
     --add-host ${APP_DOMAIN}:${HOST} \
@@ -361,6 +363,8 @@ sudo docker pull ${BIOCOLAB_REPO}
 ## stop and remove previous instance
 sudo docker stop biocolab || true
 sudo docker rm biocolab || true
+sudo docker container stop biocolab || true
+sudo docker container rm biocolab || true
 
 # Pull BioTuring ecosystem
 echo -e "${_BLUE}Pulling bioturing ecosystem image${_NC}"
