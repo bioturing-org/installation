@@ -301,16 +301,9 @@ echo -e "${_BLUE}Logging in to ${_NC}"
 BIOPROXY_REPO="bioturing/bioproxy:${COLAB_PROXY_VERSION}"
 sudo docker pull ${BIOPROXY_REPO}
 
-##
-count_biproxy=`docker ps -s | grep bioproxy | wc -l`
-
-if [ $count_biproxy -ge 1 ]
-  then 
-     sudo docker stop bioproxy || true
-     sudo docker rm bioproxy || true
-  else
-     echo "No any process for Bioproxy is running previously."
-fi
+## stop and remove previous instance
+sudo docker stop bioproxy || true
+sudo docker rm bioproxy || true
 
 sudo docker run -t -i \
     --add-host ${APP_DOMAIN}:${HOST} \
@@ -339,8 +332,8 @@ sudo docker run -t -i \
     -p 2049:2049 ${NFS_PORT_MAP} \
     -p 32767:32767 \
     -p 32765:32765 \
-    -v ${METADATA_DIR}:/bitnami/postgresql \
-    -v ${CONFIG_VOLUME}:/home/configs \
+    -v ${METADATA_DIR}:/bitnami/postgresql:rw \
+    -v ${CONFIG_VOLUME}:/home/configs:rw \
     --name bioproxy \
     --cap-add SYS_ADMIN  \
     --cap-add NET_ADMIN  \
@@ -366,15 +359,9 @@ sudo docker login -u="bioturing" -p="dckr_pat_XMFWkKcfL8p76_NlQzTfBAhuoww"
 BIOCOLAB_REPO="bioturing/biocolab:${COLAB_VERSION}"
 sudo docker pull ${BIOCOLAB_REPO}
 
-count_bicolab=`docker ps -s | grep biocolab | wc -l`
-
-if [ $count_bicolab -ge 1 ]
-  then
-     sudo docker stop biocolab || true
-     sudo docker rm biocolab || true
-  else
-     echo "No any process for Biocolab is running previously."
-fi
+## stop and remove previous instance
+sudo docker stop biocolab || true
+sudo docker rm biocolab || true
 
 # Pull BioTuring ecosystem
 echo -e "${_BLUE}Pulling bioturing ecosystem image${_NC}"
@@ -409,15 +396,15 @@ if [ "$HAVE_GPU" == "yes" ]; then
         -p 1883:1883 \
         -p 11300:11300 \
         -p 6800:6800 \
-        -v $APP_PATH:/appdata \
-        -v $USERDATA_PATH:/home \
+        -v $APP_PATH:/appdata:rw \
+        -v $USERDATA_PATH:/home:rw \
         --name biocolab \
         --gpus all \
         --cap-add SYS_ADMIN  \
         --cap-add NET_ADMIN  \
         -d ${BIOCOLAB_REPO}
 else
-echo -e "${_RED}NO_GPU${_NC}\n"
+    echo -e "${_RED}NO_GPU${_NC}\n"
     sudo docker run -t -i \
         --add-host ${APP_DOMAIN}:${HOST} \
         -e APP_DOMAIN_URL="https://${APP_DOMAIN}" \
@@ -447,8 +434,8 @@ echo -e "${_RED}NO_GPU${_NC}\n"
         -p 1883:1883 \
         -p 11300:11300 \
         -p 6800:6800 \
-        -v $APP_PATH:/appdata \
-        -v $USERDATA_PATH:/home \
+        -v $APP_PATH:/appdata:rw \
+        -v $USERDATA_PATH:/home:rw \
         --name biocolab \
         --cap-add SYS_ADMIN  \
         --cap-add NET_ADMIN  \
