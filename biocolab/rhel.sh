@@ -405,8 +405,8 @@ if [ "$HAVE_GPU" == "yes" ]; then
         -p 1883:1883 \
         -p 11300:11300 \
         -p 6800:6800 \
-        -v "$APP_PATH":/appdata \
-        -v "$USERDATA_PATH":/home \
+        -v $APP_PATH:/appdata \
+        -v $USERDATA_PATH:/home \
         --name biocolab \
         --gpus all \
         --cap-add SYS_ADMIN  \
@@ -443,8 +443,8 @@ echo -e "${_RED}NO_GPU${_NC}\n"
         -p 1883:1883 \
         -p 11300:11300 \
         -p 6800:6800 \
-        -v "$APP_PATH":/appdata \
-        -v "$USERDATA_PATH":/home \
+        -v $APP_PATH:/appdata \
+        -v $USERDATA_PATH:/home \
         --name biocolab \
         --cap-add SYS_ADMIN  \
         --cap-add NET_ADMIN  \
