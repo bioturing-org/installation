@@ -289,6 +289,7 @@ if [ -z "$AGREE_NFS" ] || [ "$AGREE_NFS" != "y" ]; then
     NFS_PORT_MAP=""
 else
     NFS_PORT_MAP="-p 111:111"
+    sudo apt install nfs-common -y
 fi
 
 # Login to bioturing.com
