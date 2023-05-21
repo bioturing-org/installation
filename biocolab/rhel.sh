@@ -282,6 +282,8 @@ if [ -z "$AGREE_NFS" ] || [ "$AGREE_NFS" != "y" ]; then
 else
     NFS_PORT_MAP="-p 111:111"
     sudo yum install nfs-utils -y
+    sudo modprobe nfs || true
+    sudo modprobe nfsd || true
 fi
 
 echo -e "\n HTTP_SERVER_PORT : $HTTP_PORT"
