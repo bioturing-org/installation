@@ -344,7 +344,7 @@ sudo docker run -t -i \
     --name bioproxy \
     --cap-add SYS_ADMIN  \
     --cap-add NET_ADMIN  \
-    -d ${BIOPROXY_REPO}
+    -d --restart always ${BIOPROXY_REPO}
 
 echo "Sleep 120 seconds to wait the bioproxy finish to start"
 sleep 120
@@ -414,7 +414,7 @@ if [ "$HAVE_GPU" == "yes" ]; then
         --gpus all \
         --cap-add SYS_ADMIN  \
         --cap-add NET_ADMIN  \
-        -d ${BIOCOLAB_REPO}
+        -d --restart always ${BIOCOLAB_REPO}
 else
     echo -e "${_RED}NO_GPU${_NC}\n"
     sudo docker run -t -i \
@@ -451,5 +451,5 @@ else
         --name biocolab \
         --cap-add SYS_ADMIN  \
         --cap-add NET_ADMIN  \
-        -d ${BIOCOLAB_REPO}
+        -d --restart always ${BIOCOLAB_REPO}
 fi
