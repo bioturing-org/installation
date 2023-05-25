@@ -25,7 +25,7 @@ _BLUE='\033[0;34m'
 _NC='\033[0m' # No Color
 _MINIMUM_ROOT_SIZE=64424509440 # 60GB
 
-echo -e "${_BLUE}BioProxy standalone installation proces started for Ubuntu.${_NC}\n"
+echo -e "${_BLUE}BioProxy standalone installation proces started on Ubuntu Machine.${_NC}\n"
 echo -e "${_GREEN}Please do not create folder structure again, if already exist from previous installation.${_NC}\n"
 
 # Input Postgres + REDIS variable
@@ -140,7 +140,9 @@ fi
 echo -e "\n"
 read -p "Please enter Biocolab's Proxy 1.0.14 (latest): " COLAB_PROXY_VERSION
 if [ -z "$COLAB_PROXY_VERSION" ]; then
-   COLAB_PROXY_VERSION ="1.0.14"
+   COLAB_PROXY_VERSION="1.0.14"
+   echo -e "\nBioproxy Version: $COLAB_PROXY_VERSION\n"
+
 fi
 
 # Need install NFS server
@@ -148,11 +150,21 @@ NFS_PORT_MAP=""
 read -p "Install NFS server [y, n]: " AGREE_NFS
 if [ -z "$AGREE_NFS" ] || [ "$AGREE_NFS" != "y" ]; then
     NFS_PORT_MAP=""
+    echo -e "\nContinue to install Bioproxy without NFS"
 else
-    NFS_PORT_MAP="-p 111:111"
-    sudo yum install nfs-utils -y
-    sudo modprobe nfs || true
-    sudo modprobe nfsd || true
+    count_nfs_port=`netstat -pnlu | grep ':111' | wc -l`
+    if [ "$count_nfs_port" -ge "1" ]; then
+        echo -e "\nPort is already in used."
+        netstat -nlup | grep ':111' 
+        echo -e "\nPlease check service and select NO for NFS server"
+        exit 1
+    else
+        NFS_PORT_MAP="-p 111:111"
+        sudo apt update
+        sudo apt install nfs-common -y
+        sudo modprobe nfs || true
+        sudo modprobe nfsd || true
+    fi
 fi
 
 
