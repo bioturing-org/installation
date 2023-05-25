@@ -25,17 +25,8 @@ _BLUE='\033[0;34m'
 _NC='\033[0m' # No Color
 _MINIMUM_ROOT_SIZE=64424509440 # 60GB
 
-echo -e "${_BLUE}BioColab UBUNTU installation version${_NC} ${_GREEN}stable${_NC}\n"
-echo -e "\n"
-# Cert before install other packages in OS
-read -p "Install Self-Signed CA Certificate [y, n]: " AGREE_CA
-if [ -z "$AGREE_CA" ] || [ "$AGREE_CA" != "y" ]; then
-    sudo apt-get install build-essential wget curl ca-certificates -y
-else
-    sudo apt-get install build-essential wget curl ca-certificates -y
-    echo -e "${_BLUE}Installing trusted SSL certificates${_NC}\n"
-    sudo bash ./cert/ubuntu.sh
-fi
+echo -e "${_BLUE}BioProxy standalone installation proces started for Ubuntu.${_NC}\n"
+echo -e "${_GREEN}Please do not create folder structure again, if already exist from previous installation.${_NC}\n"
 
 # Input Postgres + REDIS variable
 #---------------------------------
@@ -50,7 +41,7 @@ REDIS_PASSWORD="ca39c850e2d845202839be08e8684e4f"
 
 # Input metadata volume using bioproxy => /bitnami/postgresql
 echo -e "\n"
-read -p "Metadata volume (persistent volume to store metadata /biocolab/metadata --> /bitnami/postgresql): " METADATA_DIR
+read -p "Press Enter if already exist. Metadata volume (persistent volume to store metadata /biocolab/metadata --> /bitnami/postgresql): " METADATA_DIR
 if [ -z "$METADATA_DIR" ];
 then
     METADATA_DIR="/biocolab/metadata"
@@ -64,7 +55,7 @@ fi
 
 # Input CONFIG_VOLUME using bioproxy => /home/configs
 echo -e "\n"
-read -p "configs volume (this directory must contain two files: tls.crt and tls.key from your SSL certificate for HTTPS /biocolab/configs --> /home/configs): " CONFIG_VOLUME
+read -p "Press Enter if already exist. Config volume (this directory must contain two files: tls.crt and tls.key from your SSL certificate for HTTPS /biocolab/configs --> /home/configs): " CONFIG_VOLUME
 if [ -z "$CONFIG_VOLUME" ];
 then
     CONFIG_VOLUME="/biocolab/configs"
@@ -76,76 +67,12 @@ then
     exit 1
 fi
 
-# Input user data volume => /home
-echo -e "\n"
-read -p "user_data volume (persistent volume to store user data /biocolab/userdata --> /home): " USERDATA_PATH
-if [ -z "$USERDATA_PATH" ];
-then
-    USERDATA_PATH="/biocolab/userdata"
-fi
-echo -e "USERDATA_PATH=${USERDATA_PATH} \n"
-if [ ! -d "$USERDATA_PATH" ];
-then
-    echo -e "${_RED}Directory DOES NOT exist. Exiting...${_NC}"
-    exit 1
-fi
-
-# Input application data volume => /appdata
-echo -e "\n"
-read -p "app_data volume (persistent volume to store app data /biocolab/appdata --> /appdata): " APP_PATH
-if [ -z "$APP_PATH" ];
-then
-    APP_PATH="/biocolab/appdata"
-fi
-echo -e "APP_PATH=${APP_PATH} \n"
-if [ ! -d "$APP_PATH" ];
-then
-    echo -e "${_RED}Directory DOES NOT exist. Exiting...${_NC}"
-    exit 1
-fi
-
-# Input BioColab Token
-echo -e "\n"
-read -p "BioColab token (please contact support@bioturing.com for a token): " BIOCOLAB_TOKEN
-if [ -z "$BIOCOLAB_TOKEN" ];
-then
-    echo -e "${_RED}Empty token. Existing...${_NC}"
-    exit 1
-fi
-
 # Input domain name
 echo -e "\n"
-read -p "Domain name (example: biocolab.<Your Domain>.com): " APP_DOMAIN
+read -p "Domain name (example: biocolab.<Your Domain>.com. Kindly input your existing domain): " APP_DOMAIN
 if [ -z "$APP_DOMAIN" ];
 then
     echo -e "${_RED}Empty domain name is not allowed. Exiting...${_NC}"
-    exit 1
-fi
-
-# Input administrator username
-echo -e "\n"
-read -p "Administrator username (example: admin): " ADMIN_USERNAME
-if [ -z "$ADMIN_USERNAME" ];
-then
-    echo -e "${_RED}Empty administrator username is not allowed. Exiting...${_NC}"
-    exit 1
-fi
-
-# Input administrator password
-echo -e "\n"
-read -s -p "Administrator password: " ADMIN_PASSWORD
-if [ -z "$ADMIN_PASSWORD" ];
-then
-    echo -e "${_RED}Empty administrator password is not allowed. Exiting...${_NC}"
-    exit 1
-fi
-
-# Confirm administrator password
-echo -e "\n"
-read -s -p "Confirm administrator password: " ADMIN_PASSWORD_CONFIRM
-if [ "$ADMIN_PASSWORD" != "$ADMIN_PASSWORD_CONFIRM" ];
-then
-    echo -e "${_RED}Password does not match. Exiting...${_NC}"
     exit 1
 fi
 
@@ -164,7 +91,6 @@ else
     exit 1
 fi
 
-echo -e "\n"
 read -p "Please input expose HTTPS port (443): " HTTPS_PORT
 if [ -z "$HTTPS_PORT" ]; then
     HTTPS_PORT=443
@@ -178,70 +104,14 @@ else
     exit 1
 fi
 
-# Docker + CUDA
-echo -e "\n"
-echo -e "${_BLUE}Installing docker${_NC}\n"
-curl https://get.docker.com | sh
-sudo systemctl --now enable docker
-sudo systemctl start docker
-
-# Input GPU
-echo -e "\n"
-read -p "Do you have GPU on your machine: [y/n]" HAVE_GPU
-if [ -z "$HAVE_GPU" ] || [ "$HAVE_GPU" != "y" ];
-then
-    HAVE_GPU="no"
-else
-    read -p "Do you need install CUDA Toolkit [y, n]: " AGREE_INSTALL
-    if [ -z "$AGREE_INSTALL" ] || [ "$AGREE_INSTALL" != "y" ]; then
-        echo -e "${_RED}Ignore re-install CUDA Toolkit${_NC}"
-    else
-        echo -e "${_BLUE}Checking root partition capacity${_NC}"
-        ROOT_SIZE=$(df -B1 --output=source,size --total / | grep 'total' | awk '{print $2}')
-        if [ "$ROOT_SIZE" -lt "$_MINIMUM_ROOT_SIZE" ];
-        then
-            echo -e "${_RED}The root partition should be at least 64GB${_NC}"
-            exit 1
-        fi
-
-        # NVIDIA CUDA Toolkit
-        echo -e "${_BLUE}Installing NVIDIA CUDA Toolkit 11.7${_NC}\n"
-        wget https://developer.download.nvidia.com/compute/cuda/11.7.1/local_installers/cuda_11.7.1_515.65.01_linux.run
-        sudo sh cuda_11.7.1_515.65.01_linux.run
-    fi
-
-    read -p "Do you need install NVIDIA Docker 2 [y, n]: " AGREE_INSTALL
-    if [ -z "$AGREE_INSTALL" ] || [ "$AGREE_INSTALL" != "y" ]; then
-        echo -e "${_RED}Ignore re-install NVIDIA Docker 2${_NC}"
-    else
-        # NVIDIA CUDA Docker 2
-        echo -e "${_BLUE}Installing NVIDIA Docker 2${_NC}\n"
-        distribution=$(. /etc/os-release;echo $ID$VERSION_ID) &&\
-            curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg &&\
-            curl -s -L https://nvidia.github.io/libnvidia-container/$distribution/libnvidia-container.list | \
-            sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
-            sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
-
-        sudo apt-get update
-        sudo apt-get install -y nvidia-docker2
-        sudo systemctl restart docker
-    fi
-fi
-
-# Basic package
-echo -e "\n"
-echo -e "${_BLUE}Installing base package${_NC}\n"
-sudo apt-get update
-sudo apt install net-tools -y
-
 #Host IP Address
+echo -e "\n"
 echo "[INFO] Get LAN IP addresses"
 ifconfig -a
 LIST_IP=`ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p'`
 HOST=`echo $LIST_IP | awk -F' ' '{print $NF}'`
 
 echo "Given IP $HOST was detected. Kindly provide ethernet IP. You might have multiple IP's"
-
 echo -e "\n"
 
 read -p "Would you like to change IP[${HOST}] [y, n]: " AGREE_IP_CHANGE
@@ -270,36 +140,40 @@ fi
 echo -e "\n"
 read -p "Please enter Biocolab's Proxy 1.0.14 (latest): " COLAB_PROXY_VERSION
 if [ -z "$COLAB_PROXY_VERSION" ]; then
-    COLAB_PROXY_VERSION="1.0.14"
+   COLAB_PROXY_VERSION ="1.0.14"
 fi
 
-echo -e "\n HTTP_SERVER_PORT : $HTTP_PORT"
-echo -e "\n HTTPS_SERVER_PORT : $HTTPS_PORT"
-echo -e "\n METADATA_DIR : ${METADATA_DIR}"
-echo -e "\n POSTGRES_PASSWORD : $PG_PASSWORD"
-echo -e "\n APP_DOMAIN : $APP_DOMAIN"
-echo -e "\n HOST: $HOST"
-echo -e "\n REDIS_PASSWORD:  $REDIS_PASSWORD"
-
 # Need install NFS server
-echo -e "\n"
 NFS_PORT_MAP=""
 read -p "Install NFS server [y, n]: " AGREE_NFS
 if [ -z "$AGREE_NFS" ] || [ "$AGREE_NFS" != "y" ]; then
     NFS_PORT_MAP=""
 else
     NFS_PORT_MAP="-p 111:111"
-    sudo apt install nfs-common -y
+    sudo yum install nfs-utils -y
     sudo modprobe nfs || true
     sudo modprobe nfsd || true
 fi
+
+
+echo -e "\n APP_DOMAIN : $APP_DOMAIN"
+echo -e "\n HOST: $HOST"
+echo -e "\n POSTGRESQL_DATABASE: $PG_HUB_DATABASE"
+echo -e "\n POSTGRESQL_USERNAME : $PG_USERNAME"
+echo -e "\n POSTGRES_PASSWORD : $PG_PASSWORD"
+echo -e "\n REDIS_PASSWORD:  $REDIS_PASSWORD"
+echo -e "\n HTTP_SERVER_PORT : $HTTP_PORT"
+echo -e "\n HTTPS_SERVER_PORT : $HTTPS_PORT"
+echo -e "\n METADATA_DIR : ${METADATA_DIR}"
+echo -e "\n CONFIG VOLUME : ${CONFIG_VOLUME}"
+echo -e "\n COLAB_LIST_SERVER : ${HOST}:11123" 
 
 # Login to bioturing.com
 echo -e "\n"
 echo -e "${_BLUE}Logging in to bioturing.com${_NC}"
 sudo docker login -u="bioturing" -p="dckr_pat_XMFWkKcfL8p76_NlQzTfBAhuoww"
 
-echo -e "${_BLUE}Pulling bioturing BioColab Proxy - ecosystem image${_NC}"
+echo -e "${_BLUE}Pulling bioturing BioProxy - ecosystem image${_NC}"
 echo -e "${_BLUE}Logging in to ${_NC}"
 BIOPROXY_REPO="bioturing/bioproxy:${COLAB_PROXY_VERSION}"
 sudo docker pull ${BIOPROXY_REPO}
@@ -343,107 +217,3 @@ sudo docker run -t -i \
     --cap-add SYS_ADMIN  \
     --cap-add NET_ADMIN  \
     -d --restart always ${BIOPROXY_REPO}
-
-echo "Sleep 120 seconds to wait the bioproxy finish to start"
-sleep 120
-
-###################################################################################
-
-# Check Version
-
-read -p "Please enter Biocolab's VERSION 1.0.14 (latest): " COLAB_VERSION
-if [ -z "$COLAB_VERSION" ]; then
-    COLAB_VERSION="1.0.14"
-fi
-
-# Login to bioturing.com
-echo -e "${_BLUE}Logging in to bioturing.com${_NC}"
-sudo docker login -u="bioturing" -p="dckr_pat_XMFWkKcfL8p76_NlQzTfBAhuoww"
-
-BIOCOLAB_REPO="bioturing/biocolab:${COLAB_VERSION}"
-sudo docker pull ${BIOCOLAB_REPO}
-
-## stop and remove previous instance
-sudo docker stop biocolab || true
-sudo docker rm biocolab || true
-sudo docker container stop biocolab || true
-sudo docker container rm biocolab || true
-
-# Pull BioTuring ecosystem
-echo -e "${_BLUE}Pulling bioturing ecosystem image${_NC}"
-if [ "$HAVE_GPU" == "yes" ]; then
-    echo -e "${_BLUE}HAVE_GPU${_NC}\n"
-    sudo docker run -t -i \
-        --add-host ${APP_DOMAIN}:${HOST} \
-        -e APP_DOMAIN_URL="https://${APP_DOMAIN}" \
-        -e COLAB_TOKEN="$BIOCOLAB_TOKEN" \
-        -e ADMIN_USERNAME="$ADMIN_USERNAME" \
-        -e ADMIN_PASSWORD="$ADMIN_PASSWORD" \
-        -e HOST="0.0.0.0" \
-        -e PORT="11123" \
-        -e PG_HOST="$HOST" \
-        -e PG_DATABASE="$PG_DATABASE" \
-        -e PG_USERNAME="$PG_USERNAME" \
-        -e PG_PASSWORD="$PG_PASSWORD" \
-        -e PG_PORT=5432 \
-        -e REDIS_PASSWORD="$REDIS_PASSWORD" \
-        -e COLLABORATIVE_MODE="false" \
-        -e TRAEFIK_PROXY_MODE="false" \
-        -e TRACING_MODE="false" \
-        -e USE_REDIS_CACHE="true" \
-        -e REDIS_LIST="$HOST:6379" \
-        -e MEMCACHED_LIST="$HOST:11211" \
-        -e MQTT_LIST_IPS="$HOST" \
-        -e HUB_LIST_IPS="$HOST" \
-        -e ARIA2C_LIST_IPS="$HOST" \
-        -p 11123:11123 \
-        -p 18000:18000 \
-        -p 9001:9001 \
-        -p 1883:1883 \
-        -p 11300:11300 \
-        -p 6800:6800 \
-        -v $APP_PATH:/appdata:rw \
-        -v $USERDATA_PATH:/home:rw \
-        --name biocolab \
-        --gpus all \
-        --cap-add SYS_ADMIN  \
-        --cap-add NET_ADMIN  \
-        -d --restart always ${BIOCOLAB_REPO}
-else
-    echo -e "${_RED}NO_GPU${_NC}\n"
-    sudo docker run -t -i \
-        --add-host ${APP_DOMAIN}:${HOST} \
-        -e APP_DOMAIN_URL="https://${APP_DOMAIN}" \
-        -e COLAB_TOKEN="$BIOCOLAB_TOKEN" \
-        -e ADMIN_USERNAME="$ADMIN_USERNAME" \
-        -e ADMIN_PASSWORD="$ADMIN_PASSWORD" \
-        -e HOST="0.0.0.0" \
-        -e PORT="11123" \
-        -e PG_HOST="$HOST" \
-        -e PG_DATABASE="$PG_DATABASE" \
-        -e PG_USERNAME="$PG_USERNAME" \
-        -e PG_PASSWORD="$PG_PASSWORD" \
-        -e PG_PORT=5432 \
-        -e REDIS_PASSWORD="$REDIS_PASSWORD" \
-        -e COLLABORATIVE_MODE="false" \
-        -e TRAEFIK_PROXY_MODE="false" \
-        -e TRACING_MODE="false" \
-        -e USE_REDIS_CACHE="true" \
-        -e REDIS_LIST="$HOST:6379" \
-        -e MEMCACHED_LIST="$HOST:11211" \
-        -e MQTT_LIST_IPS="$HOST" \
-        -e HUB_LIST_IPS="$HOST" \
-        -e ARIA2C_LIST_IPS="$HOST" \
-        -p 11123:11123 \
-        -p 18000:18000 \
-        -p 9001:9001 \
-        -p 1883:1883 \
-        -p 11300:11300 \
-        -p 6800:6800 \
-        -v $APP_PATH:/appdata:rw \
-        -v $USERDATA_PATH:/home:rw \
-        --name biocolab \
-        --cap-add SYS_ADMIN  \
-        --cap-add NET_ADMIN  \
-        -d --restart always ${BIOCOLAB_REPO}
-fi
