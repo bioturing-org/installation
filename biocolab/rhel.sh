@@ -124,13 +124,17 @@ then
 fi
 
 # Input administrator username
-echo -e "\n"
-read -p "Administrator username (example: admin): " ADMIN_USERNAME
-if [ -z "$ADMIN_USERNAME" ];
-then
-    echo -e "${_RED}Empty administrator username is not allowed. Exiting...${_NC}"
-    exit 1
-fi
+# echo -e "\n"
+# read -p "Administrator username (example: admin): " ADMIN_USERNAME
+# if [ -z "$ADMIN_USERNAME" ];
+# then
+#    echo -e "${_RED}Empty administrator username is not allowed. Exiting...${_NC}"
+#    exit 1
+#fi
+# Admin user name
+ADMIN_USERNAME="admin"
+
+echo -e "\nPlease note user name: $ADMIN_USERNAME"
 
 # Input administrator password
 echo -e "\n"
@@ -271,7 +275,7 @@ fi
 echo -e "\n"
 read -p "Please enter Biocolab's Proxy 1.0.14 (latest): " COLAB_PROXY_VERSION
 if [ -z "$COLAB_PROXY_VERSION" ]; then
-   COLAB_PROXY_VERSION ="1.0.14"
+   COLAB_PROXY_VERSION="1.0.14"
 fi
 
 # Need install NFS server
