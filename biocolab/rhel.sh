@@ -343,8 +343,10 @@ sudo docker run -t -i \
     -v ${METADATA_DIR}:/bitnami/postgresql:rw \
     -v ${CONFIG_VOLUME}:/home/configs:rw \
     --name bioproxy \
-    --cap-add SYS_ADMIN  \
-    --cap-add NET_ADMIN  \
+    --cap-add SYS_ADMIN \
+    --cap-add NET_ADMIN \
+    --device /dev/fuse \
+    --security-opt apparmor:unconfined \
     -d --restart always ${BIOPROXY_REPO}
 
 echo "Sleep 120 seconds to wait the bioproxy finish to start"
@@ -410,8 +412,10 @@ if [ "$HAVE_GPU" == "yes" ]; then
         -v $USERDATA_PATH:/home:rw \
         --name biocolab \
         --gpus all \
-        --cap-add SYS_ADMIN  \
-        --cap-add NET_ADMIN  \
+        --cap-add SYS_ADMIN \
+        --cap-add NET_ADMIN \
+        --device /dev/fuse \
+        --security-opt apparmor:unconfined \
         -d --restart always ${BIOCOLAB_REPO}
 else
     echo -e "${_RED}NO_GPU${_NC}\n"
@@ -447,7 +451,9 @@ else
         -v $APP_PATH:/appdata:rw \
         -v $USERDATA_PATH:/home:rw \
         --name biocolab \
-        --cap-add SYS_ADMIN  \
-        --cap-add NET_ADMIN  \
+        --cap-add SYS_ADMIN \
+        --cap-add NET_ADMIN \
+        --device /dev/fuse \
+        --security-opt apparmor:unconfined \
         -d --restart always ${BIOCOLAB_REPO}
 fi

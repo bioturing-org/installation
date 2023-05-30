@@ -225,6 +225,8 @@ sudo docker run -t -i \
     -v ${METADATA_DIR}:/bitnami/postgresql:rw \
     -v ${CONFIG_VOLUME}:/home/configs:rw \
     --name bioproxy \
-    --cap-add SYS_ADMIN  \
-    --cap-add NET_ADMIN  \
+    --cap-add SYS_ADMIN \
+    --cap-add NET_ADMIN \
+    --device /dev/fuse \
+    --security-opt apparmor:unconfined \
     -d --restart always ${BIOPROXY_REPO}
