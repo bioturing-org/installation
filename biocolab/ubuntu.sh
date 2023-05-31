@@ -273,9 +273,9 @@ fi
 
 # Check Version
 echo -e "\n"
-read -p "Please enter Biocolab's Proxy 1.0.14 (latest): " COLAB_PROXY_VERSION
+read -p "Please enter Biocolab's Proxy 1.0.15 (latest): " COLAB_PROXY_VERSION
 if [ -z "$COLAB_PROXY_VERSION" ]; then
-    COLAB_PROXY_VERSION="1.0.14"
+    COLAB_PROXY_VERSION="1.0.15"
 fi
 
 echo -e "\n HTTP_SERVER_PORT : $HTTP_PORT"
@@ -344,8 +344,10 @@ sudo docker run -t -i \
     -v ${METADATA_DIR}:/bitnami/postgresql:rw \
     -v ${CONFIG_VOLUME}:/home/configs:rw \
     --name bioproxy \
-    --cap-add SYS_ADMIN  \
-    --cap-add NET_ADMIN  \
+    --cap-add SYS_ADMIN \
+    --cap-add NET_ADMIN \
+    --device /dev/fuse \
+    --security-opt apparmor:unconfined \
     -d --restart always ${BIOPROXY_REPO}
 
 echo "Sleep 120 seconds to wait the bioproxy finish to start"
@@ -355,9 +357,9 @@ sleep 120
 
 # Check Version
 
-read -p "Please enter Biocolab's VERSION 1.0.14 (latest): " COLAB_VERSION
+read -p "Please enter Biocolab's VERSION 1.0.15 (latest): " COLAB_VERSION
 if [ -z "$COLAB_VERSION" ]; then
-    COLAB_VERSION="1.0.14"
+    COLAB_VERSION="1.0.15"
 fi
 
 # Login to bioturing.com
@@ -410,8 +412,10 @@ if [ "$HAVE_GPU" == "yes" ]; then
         -v $USERDATA_PATH:/home:rw \
         --name biocolab \
         --gpus all \
-        --cap-add SYS_ADMIN  \
-        --cap-add NET_ADMIN  \
+        --cap-add SYS_ADMIN \
+        --cap-add NET_ADMIN \
+        --device /dev/fuse \
+        --security-opt apparmor:unconfined \
         -d --restart always ${BIOCOLAB_REPO}
 else
     echo -e "${_RED}NO_GPU${_NC}\n"
@@ -447,7 +451,9 @@ else
         -v $APP_PATH:/appdata:rw \
         -v $USERDATA_PATH:/home:rw \
         --name biocolab \
-        --cap-add SYS_ADMIN  \
-        --cap-add NET_ADMIN  \
+        --cap-add SYS_ADMIN \
+        --cap-add NET_ADMIN \
+        --device /dev/fuse \
+        --security-opt apparmor:unconfined \
         -d --restart always ${BIOCOLAB_REPO}
 fi
