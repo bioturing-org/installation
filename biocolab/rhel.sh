@@ -25,7 +25,7 @@ _BLUE='\033[0;34m'
 _NC='\033[0m' # No Color
 _MINIMUM_ROOT_SIZE=64424509440 # 60GB
 
-echo -e "${_BLUE}BioColab UBUNTU installation version${_NC} ${_GREEN}stable${_NC}\n"
+echo -e "${_BLUE}BioColab RedHat installation version${_NC} ${_GREEN}stable${_NC}\n"
 
 # Cert before install other packages in OS
 echo -e "\n"
@@ -302,9 +302,9 @@ fi
 
 # Check Version
 echo -e "\n"
-read -p "Please enter Biocolab's Proxy 1.0.23 (latest): " COLAB_PROXY_VERSION
+read -p "Please enter Biocolab's Proxy 1.0.24 (latest): " COLAB_PROXY_VERSION
 if [ -z "$COLAB_PROXY_VERSION" ]; then
-   COLAB_PROXY_VERSION="1.0.23"
+   COLAB_PROXY_VERSION="1.0.24"
 fi
 
 # Need install NFS server
@@ -385,9 +385,9 @@ sleep 120
 
 # Check Version
 echo -e "\n"
-read -p "Please enter Biocolab's VERSION 1.0.23 (latest): " COLAB_VERSION
+read -p "Please enter Biocolab's VERSION 1.0.24 (latest): " COLAB_VERSION
 if [ -z "$COLAB_VERSION" ]; then
-    COLAB_VERSION="1.0.23"
+    COLAB_VERSION="1.0.24"
 fi
 
 # Login to bioturing.com
