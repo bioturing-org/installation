@@ -136,11 +136,44 @@ then
     HOST="0.0.0.0"
 fi
 
+#------------
+# Docker installation confirmation.
+already_install_count=`ps -ef | grep -i docker | grep -v grep | wc -l`
+if [ $already_install_count -ge 1 ]
+then
+    echo -e "${_BLUE}Docker is already installed with this server.${_NC}\n"
+    docker version
+else
+# Docker + CUDA
+echo -e "${_BLUE}Installing docker${_NC}\n"
+RHEL_VERSION=$(uname -r | sed 's/^.*\(el[0-9]\+\).*$/\1/')
+if [ "$RHEL_VERSION" == "el7" ]; then
+    sudo cat >> /etc/yum.repos.d/docker-ce.repo << EOF
+        [centos-extras]
+        name=Centos extras - $basearch
+        baseurl=http://mirror.centos.org/centos/7/extras/x86_64
+        enabled=1
+        gpgcheck=1
+        gpgkey=http://centos.org/keys/RPM-GPG-KEY-CentOS-7
+EOF
+    sudo yum install -y slirp4netns fuse-overlayfs container-selinux
+fi
+sudo yum install -y yum-utils
+sudo yum-config-manager \
+    --add-repo \
+    https://download.docker.com/linux/centos/docker-ce.repo
+sudo yum install docker-ce docker-ce-cli containerd.io docker-compose-plugin
+sudo systemctl enable docker
+sudo systemctl start docker
+fi
+
+#------------
+
 # Check Version
 echo -e "\n"
-read -p "Please enter Biocolab's Proxy 1.0.15 (latest): " COLAB_PROXY_VERSION
+read -p "Please enter Biocolab's Proxy 1.0.23 (latest): " COLAB_PROXY_VERSION
 if [ -z "$COLAB_PROXY_VERSION" ]; then
-   COLAB_PROXY_VERSION="1.0.15"
+   COLAB_PROXY_VERSION="1.0.23"
    echo -e "\nBioproxy Version: $COLAB_PROXY_VERSION\n"
 
 fi

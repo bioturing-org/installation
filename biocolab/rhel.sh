@@ -182,6 +182,14 @@ else
     exit 1
 fi
 
+#------------
+# Docker installation confirmation.
+already_install_count=`ps -ef | grep -i docker | grep -v grep | wc -l`
+if [ $already_install_count -ge 1 ]
+then
+    echo -e "${_BLUE}Docker is already installed with this server.${_NC}\n"
+    docker version
+else
 # Docker + CUDA
 echo -e "${_BLUE}Installing docker${_NC}\n"
 RHEL_VERSION=$(uname -r | sed 's/^.*\(el[0-9]\+\).*$/\1/')
@@ -203,6 +211,22 @@ sudo yum-config-manager \
 sudo yum install docker-ce docker-ce-cli containerd.io docker-compose-plugin
 sudo systemctl enable docker
 sudo systemctl start docker
+fi
+
+#------------
+# Check for Nvidia driver and show detail
+
+count_driver=`ls /proc/driver/ | grep -i nvidia | wc -l`
+
+if [ $count_driver -ge 1 ]
+then
+    echo -e "\nNvidia driver detected."
+    nvidia-smi
+else
+    echo -e "\nNvidia driver is not detecting."
+    echo -e "\nIt might be installed later in future."
+fi
+#------------
 
 # Input GPU
 echo -e "\n"
@@ -273,9 +297,9 @@ fi
 
 # Check Version
 echo -e "\n"
-read -p "Please enter Biocolab's Proxy 1.0.15 (latest): " COLAB_PROXY_VERSION
+read -p "Please enter Biocolab's Proxy 1.0.23 (latest): " COLAB_PROXY_VERSION
 if [ -z "$COLAB_PROXY_VERSION" ]; then
-   COLAB_PROXY_VERSION="1.0.15"
+   COLAB_PROXY_VERSION="1.0.23"
 fi
 
 # Need install NFS server
@@ -356,9 +380,9 @@ sleep 120
 
 # Check Version
 echo -e "\n"
-read -p "Please enter Biocolab's VERSION 1.0.15 (latest): " COLAB_VERSION
+read -p "Please enter Biocolab's VERSION 1.0.23 (latest): " COLAB_VERSION
 if [ -z "$COLAB_VERSION" ]; then
-    COLAB_VERSION="1.0.15"
+    COLAB_VERSION="1.0.23"
 fi
 
 # Login to bioturing.com
