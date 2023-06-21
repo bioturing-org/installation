@@ -25,7 +25,7 @@ _BLUE='\033[0;34m'
 _NC='\033[0m' # No Color
 _MINIMUM_ROOT_SIZE=64424509440 # 60GB
 
-echo -e "${_BLUE}BioColab UBUNTU installation version${_NC} ${_GREEN}stable${_NC}\n"
+echo -e "${_BLUE}BioColab Redhat installation version${_NC} ${_GREEN}stable${_NC}\n"
 
 # Cert before install other packages in OS
 echo -e "\n"
@@ -184,8 +184,12 @@ fi
 
 #------------
 # Docker installation confirmation.
+
 already_install_count=`ps -ef | grep -i docker | grep -v grep | wc -l`
-if [ $already_install_count -ge 1 ]
+
+echo "Docker count : $already_install_count"
+
+if [ $already_install_count -gt 1 ]
 then
     echo -e "${_BLUE}Docker is already installed with this server.${_NC}\n"
     docker version

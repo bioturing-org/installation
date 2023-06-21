@@ -138,8 +138,12 @@ fi
 
 #------------
 # Docker installation confirmation.
+
 already_install_count=`ps -ef | grep -i docker | grep -v grep | wc -l`
-if [ $already_install_count -ge 1 ]
+
+echo "Docker count : $already_install_count"
+
+if [ $already_install_count -gt 1 ]
 then
     echo -e "${_BLUE}Docker is already installed with this server.${_NC}\n"
     docker version
