@@ -136,11 +136,28 @@ then
     HOST="0.0.0.0"
 fi
 
+#----------------------------
+# Docker installation confirmation.
+already_install_count=`ps -ef | grep -i docker | grep -v grep | wc -l`
+if [ $already_install_count -ge 1 ]
+then
+    echo -e "${_BLUE}Docker is already installed with this server.${_NC}\n"
+    docker version
+else
+# Docker + CUDA
+    echo -e "\n"
+    echo -e "${_BLUE}Installing docker${_NC}\n"
+    curl https://get.docker.com | sh
+    sudo systemctl --now enable docker
+    sudo systemctl start docker
+fi
+#----------------------------
+
 # Check Version
 echo -e "\n"
-read -p "Please enter Biocolab's Proxy 1.0.15 (latest): " COLAB_PROXY_VERSION
+read -p "Please enter Biocolab's Proxy 1.0.23 (latest): " COLAB_PROXY_VERSION
 if [ -z "$COLAB_PROXY_VERSION" ]; then
-   COLAB_PROXY_VERSION="1.0.15"
+   COLAB_PROXY_VERSION="1.0.23"
    echo -e "\nBioproxy Version: $COLAB_PROXY_VERSION\n"
 
 fi
