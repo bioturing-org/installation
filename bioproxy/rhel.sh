@@ -139,7 +139,9 @@ fi
 #------------
 # Docker installation confirmation.
 
-already_install_count=`ps -ef | grep -i docker | grep -v grep | wc -l`
+# already_install_count=`ps -ef | grep -i docker | grep -v grep | wc -l`
+
+already_install_count=`pidof dockerd | wc -l`
 
 echo "Docker count : $already_install_count"
 
