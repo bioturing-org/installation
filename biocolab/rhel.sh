@@ -302,9 +302,9 @@ fi
 
 # Check Version
 echo -e "\n"
-read -p "Please enter Biocolab's Proxy 1.0.24 (latest): " COLAB_PROXY_VERSION
+read -p "Please enter Biocolab's Proxy 1.0.25 (latest): " COLAB_PROXY_VERSION
 if [ -z "$COLAB_PROXY_VERSION" ]; then
-   COLAB_PROXY_VERSION="1.0.24"
+   COLAB_PROXY_VERSION="1.0.25"
 fi
 
 # Need install NFS server
