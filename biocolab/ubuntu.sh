@@ -156,9 +156,9 @@ fi
 
 # Expose ports
 echo -e "\n"
-read -p "Please input expose HTTP port (80): " HTTP_PORT
+read -p "Please input expose HTTP port (8080): " HTTP_PORT
 if [ -z "$HTTP_PORT" ]; then
-    HTTP_PORT=80
+    HTTP_PORT=8080
 fi
 
 HTTP_PORT_VALID=`port_is_ok ${HTTP_PORT}`
@@ -170,9 +170,9 @@ else
 fi
 
 echo -e "\n"
-read -p "Please input expose HTTPS port (443): " HTTPS_PORT
+read -p "Please input expose HTTPS port (4433): " HTTPS_PORT
 if [ -z "$HTTPS_PORT" ]; then
-    HTTPS_PORT=443
+    HTTPS_PORT=4433
 fi
 
 HTTPS_PORT_VALID=`port_is_ok ${HTTPS_PORT}`
