@@ -240,6 +240,7 @@ if [ -z "$HAVE_GPU" ] || [ "$HAVE_GPU" != "y" ];
 then
     HAVE_GPU="no"
 else
+    HAVE_GPU="yes"
     echo -e "${_BLUE}Checking root partition capacity${_NC}"
     ROOT_SIZE=$(df -B1 --output=source,size --total / | grep 'total' | awk '{print $2}')
     if [ "$ROOT_SIZE" -lt "$_MINIMUM_ROOT_SIZE" ];
@@ -357,7 +358,7 @@ sudo docker run -t -i \
     -e MEMCACHED_PORT=11211 \
     -e REDIS_PORT=6379 \
     -e DEBUG_MODE="false" \
-    -e ENABLE_HTTPS="true" \
+    -e ENABLE_HTTPS="false" \
     -e USE_LETSENCRYPT="false" \
     -e COLAB_LIST_SERVER="$HOST:11123" \
     -p ${HTTP_PORT}:80 \
@@ -406,7 +407,7 @@ sudo docker container rm biocolab || true
 
 # Pull BioTuring ecosystem
 echo -e "${_BLUE}Pulling bioturing ecosystem image${_NC}"
-if [ "$HAVE_GPU" == "yes" ]; then
+if [ "$HAVE_GPU" == "y" ] || [ "$HAVE_GPU" == "yes" ]; then
     echo -e "${_BLUE}HAVE_GPU${_NC}\n"
     sudo docker run -t -i \
         --add-host ${APP_DOMAIN}:${HOST} \
