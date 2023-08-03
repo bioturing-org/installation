@@ -227,6 +227,7 @@ if [ -z "$HAVE_GPU" ] || [ "$HAVE_GPU" != "y" ];
 then
     HAVE_GPU="no"
 else
+    HAVE_GPU="yes"
     read -p "Do you need install CUDA Toolkit [y, n]: " AGREE_INSTALL
     if [ -z "$AGREE_INSTALL" ] || [ "$AGREE_INSTALL" != "y" ]; then
         echo -e "${_RED}Ignore re-install CUDA Toolkit${_NC}"
@@ -359,7 +360,7 @@ sudo docker run -t -i \
     -e MEMCACHED_PORT=11211 \
     -e REDIS_PORT=6379 \
     -e DEBUG_MODE="false" \
-    -e ENABLE_HTTPS="true" \
+    -e ENABLE_HTTPS="false" \
     -e USE_LETSENCRYPT="false" \
     -e COLAB_LIST_SERVER="$HOST:11123" \
     -p ${HTTP_PORT}:80 \
@@ -407,7 +408,7 @@ sudo docker container rm biocolab || true
 
 # Pull BioTuring ecosystem
 echo -e "${_BLUE}Pulling bioturing ecosystem image${_NC}"
-if [ "$HAVE_GPU" == "yes" ]; then
+if [ "$HAVE_GPU" == "y" ] || [ "$HAVE_GPU" == "yes" ]; then
     echo -e "${_BLUE}HAVE_GPU${_NC}\n"
     sudo docker run -t -i \
         --add-host ${APP_DOMAIN}:${HOST} \
