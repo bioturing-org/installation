@@ -324,7 +324,7 @@ read -p "Install NFS server [y, n]: " AGREE_NFS
 if [ -z "$AGREE_NFS" ] || [ "$AGREE_NFS" != "y" ]; then
     NFS_PORT_MAP=""
 else
-    NFS_PORT_MAP="-p 112:111"
+    NFS_PORT_MAP="-p 2049:2049 -p 112:111"
     sudo apt install nfs-common -y
     sudo modprobe nfs || true
     sudo modprobe nfsd || true
@@ -369,7 +369,7 @@ sudo docker run -t -i \
     -p 11211:11211 \
     -p 6379:6379 \
     -p 9091:9091 \
-    -p 2049:2049 ${NFS_PORT_MAP} \
+    ${NFS_PORT_MAP} \
     -p 32767:32767 \
     -p 32765:32765 \
     -v ${METADATA_DIR}:/bitnami/postgresql:rw \
