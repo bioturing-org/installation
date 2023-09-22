@@ -267,3 +267,10 @@ sudo docker run -t -i \
     --device /dev/fuse \
     --security-opt apparmor:unconfined \
     -d --restart always ${BIOPROXY_REPO}
+
+
+## stop and start previous instance
+#sudo docker stop bioproxy || true
+#sudo docker start bioproxy || true
+sudo docker stop biocolab || true
+sudo docker start biocolab || true
