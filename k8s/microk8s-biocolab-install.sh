@@ -208,14 +208,14 @@ else
 echo -e "${_BLUE}Enable GPU operator${_NC}\n"
 microk8s enable gpu
 fi
-read -p "Please enter Colab Proxy's VERSION (1.0.1): " COLAB_PROXY_VERSION
+read -p "Please enter BioStudio Colab Proxy's VERSION (1.0.25): " COLAB_PROXY_VERSION
 if [ -z "$COLAB_PROXY_VERSION" ]; then
-    COLAB_PROXY_VERSION="1.0.1"
+    COLAB_PROXY_VERSION="1.0.25"
 fi
 
-read -p "Please enter Colab Proxy's VERSION (1.0.2): " COLAB_BIOCOLAB_VERSION
+read -p "Please enter BioStudio Colab VERSION (2.0.50): " COLAB_BIOCOLAB_VERSION
 if [ -z "$COLAB_BIOCOLAB_VERSION" ]; then
-    COLAB_BIOCOLAB_VERSION="1.0.2"
+    COLAB_BIOCOLAB_VERSION="2.0.50"
 fi
 
 

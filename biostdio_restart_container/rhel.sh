@@ -146,9 +146,9 @@ fi
 
 # Expose ports
 echo -e "\n"
-read -p "Please input expose HTTP port (8080): " HTTP_PORT
+read -p "Please input expose HTTP port (80): " HTTP_PORT
 if [ -z "$HTTP_PORT" ]; then
-    HTTP_PORT=8080
+    HTTP_PORT=80
 fi
 
 HTTP_PORT_VALID=`port_is_ok ${HTTP_PORT}`
@@ -159,9 +159,9 @@ else
     exit 1
 fi
 
-read -p "Please input expose HTTPS port (4433): " HTTPS_PORT
+read -p "Please input expose HTTPS port (443): " HTTPS_PORT
 if [ -z "$HTTPS_PORT" ]; then
-    HTTPS_PORT=4433
+    HTTPS_PORT=443
 fi
 
 HTTPS_PORT_VALID=`port_is_ok ${HTTPS_PORT}`
@@ -288,9 +288,9 @@ sleep 120
 
 # Check Version
 echo -e "\n"
-read -p "Please enter Biocolab's VERSION 1.0.24 (latest): " COLAB_VERSION
+read -p "Please enter Biocolab's VERSION 2.0.50 (latest): " COLAB_VERSION
 if [ -z "$COLAB_VERSION" ]; then
-    COLAB_VERSION="1.0.24"
+    COLAB_VERSION="2.0.50"
 fi
 
 # Login to bioturing.com
