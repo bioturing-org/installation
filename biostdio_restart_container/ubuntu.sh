@@ -264,7 +264,7 @@ sudo docker run -t -i \
     -e POSTGRESQL_PORT_NUMBER=5432 \
     -e REDIS_PASSWORD="$REDIS_PASSWORD" \
     -e HTTP_SERVER_PORT="80" \
-    -e HTTPS_SERVER_PORT="443 \
+    -e HTTPS_SERVER_PORT="443" \
     -e MEMCACHED_PORT=11211 \
     -e REDIS_PORT=6379 \
     -e DEBUG_MODE="false" \
