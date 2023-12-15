@@ -50,21 +50,21 @@ REDIS_PASSWORD="ca39c850e2d845202839be08e8684e4f"
 
 # Input HTTP_PROXY , HTTPS_PROXY AND NO_PROXY
 echo -e "\n"
-read -s -p "HTTP_PROXY: " HTTP_PROXY
+read -p "HTTP_PROXY: " HTTP_PROXY
 if [ -z "$HTTP_PROXY" ];
 then
     HTTP_PROXY=""
 fi
 
 echo -e "\n"
-read -s -p "HTTPS_PROXY: " HTTPS_PROXY
+read -p "HTTPS_PROXY: " HTTPS_PROXY
 if [ -z "$HTTPS_PROXY" ];
 then
     HTTPS_PROXY=""
 fi
 
 echo -e "\n"
-read -s -p "NO_PROXY: " NO_PROXY
+read -p "NO_PROXY: " NO_PROXY
 if [ -z "$NO_PROXY" ];
 then
     NO_PROXY="localhost,fc00::/7,.svc,kubernetes,127.0.0.1,10.0.0.0/8,10.42.0.90,.local,fe80::/10,192.168.10.0/24,.cluster.local,::1/128,.default,0.0.0.0"
