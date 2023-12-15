@@ -38,6 +38,27 @@ PG_PASSWORD="710e93bd11212cea938d87afcc1227e3"
 REDIS_PASSWORD="ca39c850e2d845202839be08e8684e4f"
 
 #---------------------------------
+# Input HTTP_PROXY , HTTPS_PROXY AND NO_PROXY
+echo -e "\n"
+read -s -p "HTTP_PROXY: " HTTP_PROXY
+if [ -z "$HTTP_PROXY" ];
+then
+    HTTP_PROXY=""
+fi
+
+echo -e "\n"
+read -s -p "HTTPS_PROXY: " HTTPS_PROXY
+if [ -z "$HTTPS_PROXY" ];
+then
+    HTTPS_PROXY=""
+fi
+
+echo -e "\n"
+read -s -p "NO_PROXY: " NO_PROXY
+if [ -z "$NO_PROXY" ];
+then
+    NO_PROXY="localhost,fc00::/7,.svc,kubernetes,127.0.0.1,10.0.0.0/8,10.42.0.90,.local,fe80::/10,192.168.10.0/24,.cluster.local,::1/128,.default,0.0.0.0"
+fi
 
 # Input metadata volume using bioproxy => /bitnami/postgresql
 echo -e "\n"
@@ -249,6 +270,13 @@ sudo docker run -t -i \
     -e DEBUG_MODE="false" \
     -e ENABLE_HTTPS="true" \
     -e USE_LETSENCRYPT="false" \
+    -e MAX_CONNECTION=5000 \
+    -e NO_PROXY="$NO_PROXY" \
+    -e HTTP_PROXY="$HTTP_PROXY" \
+    -e HTTPS_PROXY="$HTTPS_PROXY" \
+    -e no_proxy="$NO_PROXY" \
+    -e http_proxy="$HTTP_PROXY" \
+    -e https_proxy="$HTTPS_PROXY" \
     -e COLAB_LIST_SERVER="$HOST:11123" \
     -p ${HTTP_PORT}:80 \
     -p ${HTTPS_PORT}:443 \
