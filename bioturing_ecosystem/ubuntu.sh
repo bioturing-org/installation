@@ -1,4 +1,5 @@
 #! /bin/bash
+# Ubuntu OS
 
 set -e
 
@@ -11,11 +12,6 @@ _MINIMUM_ROOT_SIZE=64424509440 # 60GB
 DT=`date "+%Y-%m-%d-%H%M%S"`
 
 # Default Parameter
-ON_BIOTURING_K8S='FALSE'
-K8S_BUFFER_PATH=""
-N_TQ_WORKERS='4'
-K8S_TQ_ADDR=""
-K8S_LENS_TQ_ADDR=""
 CONTAINER_NAME="bioturing-ecosystem"
 
 # Default folders 
@@ -131,10 +127,10 @@ then
     exit 1
 fi
 
-# Input domain name
+# Input Base URL
 echo -e "\n"
-read -p "Domain name (example: bioturing.com): " DOMAIN_NAME
-if [ -z "$DOMAIN_NAME" ];
+read -p "Base URL (example: bioturing.com): " BASE_URL
+if [ -z "$BASE_URL" ];
 then
     echo -e "${_RED}Empty domain name is not allowed. Exiting...${_NC}"
     exit 1
@@ -156,6 +152,7 @@ then
 fi
 
 echo -e "\n"
+echo -e "${_RED}If you are using NO_PROXY : Make sure 0.0.0.0,Your Domain name,localhost,127.0.0.0 also added.${_NC}"
 read -p "NO_PROXY: " NO_PROXY
 if [ -z "$NO_PROXY" ];
 then
@@ -207,17 +204,9 @@ else
     echo -e "${_RED}shm_size is : $shm_sizep ${_NC}"
 fi
 
-# Input SSL volume
 echo -e "\n"
-read -p "Are you using any Proxy / Loadbalancer that will have SSL [y/n] : " PROXY_LB_CONFIRM
-echo -e "\n"
-if [ -z "$PROXY_LB_CONFIRM" ] || [ "$PROXY_LB_CONFIRM" != "y" ]; then
-    echo -e "${_BLUE}Please configure SSL.${_NC}"  
-    
-    # Call SSL config function.
-    ssl_fun
-
-    echo -e "\n"
+echo -e "${_RED}If you are using Nginx or any proxy kindly do not use port 80, If already in the service. ${_NC}\n"
+echo -e "${_RED}If you are using Load balancer, please make sure HTTP port forwarding or HTTP port should be allow from LB.${_NC}\n"
     read -p "Please input expose HTTP port (80): " HTTP_PORT
     if [ -z "$HTTP_PORT" ]; then
         HTTP_PORT=80
@@ -232,6 +221,14 @@ if [ -z "$PROXY_LB_CONFIRM" ] || [ "$PROXY_LB_CONFIRM" != "y" ]; then
         exit 1
     fi
 
+ # Input SSL volume
+echo -e "\n"
+read -p "Would you like to configure SSL [y/n] : " SSL_CONFIRM
+echo -e "\n"
+if [ -z "$SSL_CONFIRM" ] || [ "$SSL_CONFIRM" != "y" ]; then
+    echo -e "${_BLUE}Kindly configure SSL with your Proxy / Loadblancer.${_NC}"  
+else
+    SSL_CONFIRM="y"
     echo -e "\n"
     read -p "Please input expose HTTPS port (443): " HTTPS_PORT
     if [ -z "$HTTPS_PORT" ]; then
@@ -246,22 +243,21 @@ if [ -z "$PROXY_LB_CONFIRM" ] || [ "$PROXY_LB_CONFIRM" != "y" ]; then
         echo -e "${_RED}Invalid expose HTTPS port: ${HTTPS_PORT}${_NC}\n"
         exit 1
     fi
-
-else
-    PROXY_LB_CONFIRM="y"
-    # Proxy information
-    echo -e "${_BLUE}As you are using LB / Proxy. Kindly configure SSL with LB / Proxy.${_NC}"  
+    # ssl information
+    echo -e "${_BLUE}SSL Verification.${_NC}"  
+    # Call SSL config function.
+    ssl_fun
 fi
     
 # Input SSO Domain
 echo -e "\n"
-read -p "SSO DOMAIN (example: @bioturing.com). Kindly use a comma separator passing multiple domains: " SSO_DOMAIN
-if [ -z "$SSO_DOMAIN" ];
+read -p "SSO DOMAIN (example: @bioturing.com). Kindly use a comma separator passing multiple domains: " VALIDATION_STRING
+if [ -z "$VALIDATION_STRING" ];
 then
-    SSO_DOMAIN="*"
-    echo -e "${_BLUE}SSO ALLOWED DOMAINS : ${SSO_DOMAIN}${_NC}"
+    VALIDATION_STRING="*"
+    echo -e "${_BLUE}SSO ALLOWED DOMAINS : ${VALIDATION_STRING}${_NC}"
 else
-    echo -e "${_BLUE}SSO ALLOWED DOMAINS : ${SSO_DOMAIN}${_NC}"    
+    echo -e "${_BLUE}SSO ALLOWED DOMAINS : ${VALIDATION_STRING}${_NC}"    
 fi
 
 # Worker Count
@@ -372,32 +368,28 @@ fi
 
 # Check Version
 echo -e "\n"
-read -p "Please enter BBrowserX's VERSION (latest) 2.0.6: " BBVERSION
+read -p "Please enter BBrowserX's VERSION (latest) 2.1.0 " BBVERSION
 if [ -z "$BBVERSION" ]; then
-    BBVERSION="2.0.6"
+    BBVERSION="2.1.0"
 fi
 
 # Paramter config file updates
 echo "# Parameters that used during script execution." > ${PARAMETER_CONFIG_FILE}
-echo "ON_BIOTURING_K8S='FALSE'" >> ${PARAMETER_CONFIG_FILE}
-echo "K8S_BUFFER_PATH= " >> ${PARAMETER_CONFIG_FILE}
-echo "N_TQ_WORKERS='4'" >> ${PARAMETER_CONFIG_FILE}
-echo "K8S_TQ_ADDR= " >> ${PARAMETER_CONFIG_FILE}
-echo "K8S_LENS_TQ_ADDR= " >> ${PARAMETER_CONFIG_FILE}
+echo "N_TQ_WORKERS=${N_TQ_WORKERS}" >> ${PARAMETER_CONFIG_FILE}
 echo "CONTAINER_NAME=bioturing-ecosystem" >> ${PARAMETER_CONFIG_FILE}
 echo "USER_DATA_VOLUME=${USER_DATA_VOLUME}" >> ${PARAMETER_CONFIG_FILE}
 echo "APP_DATA_VOLUME=${APP_DATA_VOLUME}" >> ${PARAMETER_CONFIG_FILE}
 echo "BIOTURING_TOKEN=${BIOTURING_TOKEN}" >> ${PARAMETER_CONFIG_FILE}
-echo "DOMAIN_NAME=${DOMAIN_NAME}" >> ${PARAMETER_CONFIG_FILE}
+echo "BASE_URL=${BASE_URL}" >> ${PARAMETER_CONFIG_FILE}
 echo "HTTP_PROXY=${HTTP_PROXY}" >> ${PARAMETER_CONFIG_FILE}
 echo "HTTPS_PROXY=${HTTPS_PROXY}" >> ${PARAMETER_CONFIG_FILE}
 echo "NO_PROXY=${NO_PROXY}" >> ${PARAMETER_CONFIG_FILE}
 echo "TOTAL MEMORY=${T_MEM}" >> ${PARAMETER_CONFIG_FILE}
-echo "PROXY_LB_CONFIRM=${PROXY_LB_CONFIRM}" >> ${PARAMETER_CONFIG_FILE}
+echo "SSL_CONFIRM=${SSL_CONFIRM}" >> ${PARAMETER_CONFIG_FILE}
 echo "SSL_VOLUME=${SSL_VOLUME}" >> ${PARAMETER_CONFIG_FILE}
 echo "HTTP_PORT=${HTTP_PORT}" >> ${PARAMETER_CONFIG_FILE}
 echo "HTTPS_PORT=${HTTPS_PORT}" >> ${PARAMETER_CONFIG_FILE}
-echo "SSO_DOMAIN=${SSO_DOMAIN}" >> ${PARAMETER_CONFIG_FILE}
+echo "VALIDATION_STRING=${VALIDATION_STRING}" >> ${PARAMETER_CONFIG_FILE}
 echo "AGREE_CA=${AGREE_CA}" >> ${PARAMETER_CONFIG_FILE}
 echo "ROOT_SIZE=${ROOT_SIZE}" >> ${PARAMETER_CONFIG_FILE}
 echo "BBVERSION=${BBVERSION}" >> ${PARAMETER_CONFIG_FILE}
@@ -438,52 +430,43 @@ echo -e "\n"
 
 # Pull BioTuring ecosystem
 echo -e "${_BLUE}Pulling bioturing ecosystem image${_NC}"
-if [ "$PROXY_LB_CONFIRM" == "yes" ]  || [ "$PROXY_LB_CONFIRM" == "y" ]; then
-    echo -e "${_BLUE} PROXY or LB${_NC}\n"
-        docker pull bioturing/bioturing-ecosystem-no-nginx:${BBVERSION}
-        docker run -t -i \
-        -e WEB_DOMAIN="$DOMAIN_NAME" \
-        -e BIOTURING_TOKEN="$BIOTURING_TOKEN" \
-        -e SSO_DOMAINS="$SSO_DOMAIN" \
-        -e HTTP_PROXY="$HTTP_PROXY" \
-        -e HTTPS_PROXY="$HTTPS_PROXY" \
-        -e NO_PROXY="$NO_PROXY" \
-        -e ON_BIOTURING_K8S="$ON_BIOTURING_K8S" \
-        -e K8S_BUFFER_PATH="$K8S_BUFFER_PATH" \
-        -e N_TQ_WORKERS="$N_TQ_WORKERS" \
-        -e K8S_TQ_ADDR="$K8S_TQ_ADDR" \
-        -e K8S_LENS_TQ_ADDR="$K8S_LENS_TQ_ADDR" \
-        -v "$APP_DATA_VOLUME":/data/app_data \
-        -v "$USER_DATA_VOLUME":/data/user_data \
-        -p 3000:3000 \
-        --shm-size=${shm_sizep} \
-        --name bioturing-ecosystem \
-        --gpus all \
-        -d \
-        --restart always \
-        bioturing/bioturing-ecosystem-no-nginx:${BBVERSION} 2>&1 | tee -a ${TALK2DATA_LOG}
-else
-    echo -e "${_RED}No Proxy and Load-Balancer${_NC}\n"
+if [ "$SSL_CONFIRM" == "yes" ]  || [ "$SSL_CONFIRM" == "y" ]; then
+    echo -e "${_BLUE} SSL CONFIRMED.${_NC}\n"
         docker pull bioturing/bioturing-ecosystem:${BBVERSION}
         docker run -t -i \
-        -e WEB_DOMAIN="$DOMAIN_NAME" \
+        -e BASE_URL="$BASE_URL" \
         -e BIOTURING_TOKEN="$BIOTURING_TOKEN" \
-        -e SSO_DOMAINS="$SSO_DOMAIN" \
+        -e VALIDATION_STRINGS="$VALIDATION_STRING" \
         -e HTTP_PROXY="$HTTP_PROXY" \
         -e HTTPS_PROXY="$HTTPS_PROXY" \
         -e NO_PROXY="$NO_PROXY" \
-        -e ON_BIOTURING_K8S="$ON_BIOTURING_K8S" \
-        -e K8S_BUFFER_PATH="$K8S_BUFFER_PATH" \
         -e N_TQ_WORKERS="$N_TQ_WORKERS" \
-        -e K8S_TQ_ADDR="$K8S_TQ_ADDR" \
-        -e K8S_LENS_TQ_ADDR="$K8S_LENS_TQ_ADDR" \
         -p ${HTTP_PORT}:80 \
         -p ${HTTPS_PORT}:443 \
         -v "$APP_DATA_VOLUME":/data/app_data \
         -v "$USER_DATA_VOLUME":/data/user_data \
         -v "$SSL_VOLUME":/config/ssl \
         --name bioturing-ecosystem \
-        -p 3000:3000 \
+        --shm-size=${shm_sizep} \
+        --gpus all \
+        -d \
+        --restart always \
+        bioturing/bioturing-ecosystem:${BBVERSION} 2>&1  | tee -a ${TALK2DATA_LOG}
+else
+    echo -e "${_RED}NO SSL${_NC}\n"
+        docker pull bioturing/bioturing-ecosystem:${BBVERSION}
+        docker run -t -i \
+        -e BASE_URL="$BASE_URL" \
+        -e BIOTURING_TOKEN="$BIOTURING_TOKEN" \
+        -e VALIDATION_STRINGS="$VALIDATION_STRING" \
+        -e HTTP_PROXY="$HTTP_PROXY" \
+        -e HTTPS_PROXY="$HTTPS_PROXY" \
+        -e NO_PROXY="$NO_PROXY" \
+        -e N_TQ_WORKERS="$N_TQ_WORKERS" \
+        -p ${HTTP_PORT}:3000 \
+        -v "$APP_DATA_VOLUME":/data/app_data \
+        -v "$USER_DATA_VOLUME":/data/user_data \
+        --name bioturing-ecosystem \
         --shm-size=${shm_sizep} \
         --gpus all \
         -d \
