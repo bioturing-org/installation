@@ -447,6 +447,10 @@ if [ "$SSL_CONFIRM" == "yes" ]  || [ "$SSL_CONFIRM" == "y" ]; then
         -v "$USER_DATA_VOLUME":/data/user_data \
         -v "$SSL_VOLUME":/config/ssl \
         --name bioturing-ecosystem \
+        --cap-add SYS_ADMIN \
+        --cap-add NET_ADMIN \
+        --device /dev/fuse \
+        --security-opt apparmor:unconfined \
         --shm-size=${shm_sizep} \
         --gpus all \
         -d \
@@ -467,6 +471,10 @@ else
         -v "$APP_DATA_VOLUME":/data/app_data \
         -v "$USER_DATA_VOLUME":/data/user_data \
         --name bioturing-ecosystem \
+        --cap-add SYS_ADMIN \
+        --cap-add NET_ADMIN \
+        --device /dev/fuse \
+        --security-opt apparmor:unconfined \
         --shm-size=${shm_sizep} \
         --gpus all \
         -d \
