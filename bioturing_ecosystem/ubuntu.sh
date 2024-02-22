@@ -368,9 +368,9 @@ fi
 
 # Check Version
 echo -e "\n"
-read -p "Please enter BBrowserX's VERSION (latest) 2.1.0 " BBVERSION
+read -p "Please enter BBrowserX's VERSION (latest) 2.1.5 " BBVERSION
 if [ -z "$BBVERSION" ]; then
-    BBVERSION="2.1.0"
+    BBVERSION="2.1.5"
 fi
 
 # Paramter config file updates
