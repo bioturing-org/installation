@@ -368,9 +368,9 @@ fi
 
 # Check Version
 echo -e "\n"
-read -p "Please enter BBrowserX's VERSION (latest) 2.1.5 " BBVERSION
+read -p "Please enter BBrowserX's VERSION (latest) 2.1.6 " BBVERSION
 if [ -z "$BBVERSION" ]; then
-    BBVERSION="2.1.5"
+    BBVERSION="2.1.6"
 fi
 
 # Paramter config file updates
@@ -436,7 +436,7 @@ if [ "$SSL_CONFIRM" == "yes" ]  || [ "$SSL_CONFIRM" == "y" ]; then
         docker run -t -i \
         -e BASE_URL="$BASE_URL" \
         -e BIOTURING_TOKEN="$BIOTURING_TOKEN" \
-        -e VALIDATION_STRINGS="$VALIDATION_STRING" \
+        -e VALIDATION_STRING="$VALIDATION_STRING" \
         -e HTTP_PROXY="$HTTP_PROXY" \
         -e HTTPS_PROXY="$HTTPS_PROXY" \
         -e NO_PROXY="$NO_PROXY" \
@@ -462,7 +462,7 @@ else
         docker run -t -i \
         -e BASE_URL="$BASE_URL" \
         -e BIOTURING_TOKEN="$BIOTURING_TOKEN" \
-        -e VALIDATION_STRINGS="$VALIDATION_STRING" \
+        -e VALIDATION_STRING="$VALIDATION_STRING" \
         -e HTTP_PROXY="$HTTP_PROXY" \
         -e HTTPS_PROXY="$HTTPS_PROXY" \
         -e NO_PROXY="$NO_PROXY" \
