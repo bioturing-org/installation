@@ -326,9 +326,9 @@ fi
 
 # Check Version
 echo -e "\n"
-read -p "Please enter Biocolab's Proxy 1.0.26 (latest): " COLAB_PROXY_VERSION
+read -p "Please enter Biocolab's Proxy 1.0.27 (latest): " COLAB_PROXY_VERSION
 if [ -z "$COLAB_PROXY_VERSION" ]; then
-    COLAB_PROXY_VERSION="1.0.26"
+    COLAB_PROXY_VERSION="1.0.27"
 fi
 
 echo -e "\n HTTP_SERVER_PORT : $HTTP_PORT"
