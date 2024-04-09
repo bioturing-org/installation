@@ -453,6 +453,9 @@ if [ "$SSL_CONFIRM" == "yes" ]  || [ "$SSL_CONFIRM" == "y" ]; then
         -e HTTP_PROXY="$HTTP_PROXY" \
         -e HTTPS_PROXY="$HTTPS_PROXY" \
         -e NO_PROXY="$NO_PROXY" \
+        -e http_proxy="$HTTP_PROXY" \
+        -e https_proxy="$HTTPS_PROXY" \
+        -e no_proxy="$NO_PROXY" \
         -e N_TQ_WORKERS="$N_TQ_WORKERS" \
         -p ${HTTP_PORT}:80 \
         -p ${HTTPS_PORT}:443 \
@@ -479,6 +482,9 @@ else
         -e HTTP_PROXY="$HTTP_PROXY" \
         -e HTTPS_PROXY="$HTTPS_PROXY" \
         -e NO_PROXY="$NO_PROXY" \
+        -e http_proxy="$HTTP_PROXY" \
+        -e https_proxy="$HTTPS_PROXY" \
+        -e no_proxy="$NO_PROXY" \
         -e N_TQ_WORKERS="$N_TQ_WORKERS" \
         -p ${HTTP_PORT}:3000 \
         -v "$APP_DATA_VOLUME":/data/app_data \
