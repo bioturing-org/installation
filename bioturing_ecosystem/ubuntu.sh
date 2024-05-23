@@ -366,7 +366,7 @@ else
     sudo systemctl restart docker
 fi
 
-# Check Version
+# Check Bioturing ecosystem Version
 echo -e "\n"
 read -p "Please enter BBrowserX's VERSION (latest) 2.1.9 " BBVERSION
 if [ -z "$BBVERSION" ]; then
