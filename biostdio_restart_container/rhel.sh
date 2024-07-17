@@ -333,6 +333,10 @@ sudo docker container rm biocolab || true
 echo -e "${_BLUE}Pulling bioturing ecosystem image${_NC}"
 if [ "$HAVE_GPU" == "y" ] || [ "$HAVE_GPU" == "yes" ]; then
     echo -e "${_BLUE}HAVE_GPU${_NC}\n"
+    # NVIDIA Sets the compute mode to Default mode
+    echo -e "${_BLUE}NVIDIA Sets the compute mode to Default mode, allowing multiple processes to share the GPU.${_NC}\n"
+    nvidia-smi -c 0 || true
+
     sudo docker run -t -i \
         --add-host ${APP_DOMAIN}:${HOST} \
         -e APP_DOMAIN_URL="https://${APP_DOMAIN}" \
