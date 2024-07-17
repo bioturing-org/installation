@@ -366,6 +366,10 @@ else
     sudo systemctl restart docker
 fi
 
+# NVIDIA Sets the compute mode to Default mode
+echo -e "${_BLUE}NVIDIA Sets the compute mode to Default mode, allowing multiple processes to share the GPU.${_NC}\n"
+nvidia-smi -c 0 || true
+
 # Check Bioturing ecosystem Version
 echo -e "\n"
 read -p "Please enter BBrowserX's VERSION (latest) 2.1.9 " BBVERSION
