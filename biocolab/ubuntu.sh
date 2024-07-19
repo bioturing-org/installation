@@ -412,7 +412,7 @@ sudo docker run -t -i \
     --cap-add NET_ADMIN \
     --device /dev/fuse \
     --security-opt apparmor:unconfined \
-    -d --restart always ${BIOPROXY_REPO}
+    -d --privileged --restart always ${BIOPROXY_REPO}
 
 echo "Sleep 120 seconds to wait the bioproxy finish to start"
 sleep 120
@@ -490,7 +490,7 @@ if [ "$HAVE_GPU" == "y" ] || [ "$HAVE_GPU" == "yes" ]; then
         --cap-add NET_ADMIN \
         --device /dev/fuse \
         --security-opt apparmor:unconfined \
-        -d --restart always ${BIOCOLAB_REPO}
+        -d --privileged --restart always ${BIOCOLAB_REPO}
 else
     echo -e "${_RED}NO_GPU${_NC}\n"
     sudo docker run -t -i \
@@ -535,5 +535,5 @@ else
         --cap-add NET_ADMIN \
         --device /dev/fuse \
         --security-opt apparmor:unconfined \
-        -d --restart always ${BIOCOLAB_REPO}
+        -d --privileged --restart always ${BIOCOLAB_REPO}
 fi
