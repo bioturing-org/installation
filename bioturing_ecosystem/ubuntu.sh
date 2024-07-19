@@ -461,7 +461,7 @@ if [ "$SSL_CONFIRM" == "yes" ]  || [ "$SSL_CONFIRM" == "y" ]; then
         --shm-size=${shm_sizep} \
         --gpus all \
         -d \
-        --restart always \
+        --privileged --restart always \
         bioturing/bioturing-ecosystem:${BBVERSION} 2>&1  | tee -a ${TALK2DATA_LOG}
 else
     echo -e "${_RED}NO SSL${_NC}\n"
@@ -488,7 +488,7 @@ else
         --shm-size=${shm_sizep} \
         --gpus all \
         -d \
-        --restart always \
+        --privileged --restart always \
         bioturing/bioturing-ecosystem:${BBVERSION} 2>&1  | tee -a ${TALK2DATA_LOG}
 fi
 

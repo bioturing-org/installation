@@ -288,7 +288,7 @@ sudo docker run -t -i \
     --cap-add NET_ADMIN \
     --device /dev/fuse \
     --security-opt apparmor:unconfined \
-    -d --restart always ${BIOPROXY_REPO}
+    -d --privileged --restart always ${BIOPROXY_REPO}
 
 
 ## stop and start previous instance
