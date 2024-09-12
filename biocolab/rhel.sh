@@ -363,7 +363,7 @@ echo -e "\n REDIS_PASSWORD:  $REDIS_PASSWORD"
 # Login to bioturing.com
 echo -e "\n"
 echo -e "${_BLUE}Logging in to bioturing.com${_NC}"
-sudo docker login -u="bioturing" -p="dckr_pat_XMFWkKcfL8p76_NlQzTfBAhuoww"
+## Image is Public -- Docker login no longer require ##
 
 echo -e "${_BLUE}Pulling bioturing BioColab Proxy - ecosystem image${_NC}"
 echo -e "${_BLUE}Logging in to ${_NC}"
@@ -427,7 +427,7 @@ fi
 # Login to bioturing.com
 echo -e "\n"
 echo -e "${_BLUE}Logging in to bioturing.com${_NC}"
-sudo docker login -u="bioturing" -p="dckr_pat_XMFWkKcfL8p76_NlQzTfBAhuoww"
+## Image is Public -- Docker login no longer require ##
 
 BIOCOLAB_REPO="bioturing/biocolab:${COLAB_VERSION}"
 sudo docker pull ${BIOCOLAB_REPO}

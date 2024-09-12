@@ -241,7 +241,7 @@ echo -e "\n COLAB_LIST_SERVER : ${HOST}:11123"
 # Login to bioturing.com
 echo -e "\n"
 echo -e "${_BLUE}Logging in to bioturing.com${_NC}"
-sudo docker login -u="bioturing" -p="dckr_pat_XMFWkKcfL8p76_NlQzTfBAhuoww"
+## Image is Public -- Docker login no longer require ##
 
 echo -e "${_BLUE}Pulling bioturing BioProxy - ecosystem image${_NC}"
 echo -e "${_BLUE}Logging in to ${_NC}"
