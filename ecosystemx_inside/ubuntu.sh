@@ -254,7 +254,7 @@ if [ "$HAVE_GPU" == "y" ] || [ "$HAVE_GPU" == "yes" ]; then
     nvidia-smi -c 0 || true
         
     sudo docker run -t -i \
-        --env-file ./ecosystemx.env \
+        --env-file ./ecosystemx_inside/ecosystemx.env \
         -p ${HTTP_PORT}:80 \
         -p ${HTTPS_PORT}:443 \
         -v $DATABASE_DIR:/database:rw \
@@ -269,7 +269,7 @@ if [ "$HAVE_GPU" == "y" ] || [ "$HAVE_GPU" == "yes" ]; then
 else
     echo -e "${_RED}NO_GPU${_NC}\n"
     sudo docker run -t -i \
-        --env-file ./ecosystemx.env \
+        --env-file ./ecosystemx_inside/ecosystemx.env \
         -p ${HTTP_PORT}:80 \
         -p ${HTTPS_PORT}:443 \
         -v $DATABASE_DIR:/database:rw \
