@@ -531,7 +531,6 @@ else
         -v $USERDATA_PATH:/home:rw \
         --name biocolab \
         --cap-add SYS_ADMIN \
-        --cap-add NET_ADMIN \
         --device /dev/fuse \
         --security-opt apparmor:unconfined \
         -d --privileged --restart always ${BIOCOLAB_REPO}
