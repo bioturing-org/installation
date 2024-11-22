@@ -260,7 +260,7 @@ echo -e "${_BLUE}Logging in to bioturing.com${_NC}"
 ECOSYSTEMX_VERSION="3.0.1"
 echo -e "${_BLUE}Pulling bioturing ECOSYSTEMX image: ${ECOSYSTEMX_VERSION} ${_NC}"
 echo -e "${_BLUE}Logging in to ${_NC}"
-ECOSYSTEMX_REPO="bioturing/ecosystemx:3.0.1"
+ECOSYSTEMX_REPO="bioturing/ecosystemx:3.0.2"
 sudo docker pull ${ECOSYSTEMX_REPO}
 
 ## stop and remove previous instance
