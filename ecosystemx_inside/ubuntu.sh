@@ -81,6 +81,21 @@ then
     exit 1
 fi
 
+# Input example volume
+echo -e "\n"
+read -p "example volume (share for all members): " EXAMPLE_DIR
+if [ -z "$EXAMPLE_DIR" ];
+then
+    EXAMPLE_DIR="/ecosystemx/examples"
+fi
+echo -e "EXAMPLE_DIR=${EXAMPLE_DIR} \n"
+if [ ! -d "$EXAMPLE_DIR" ];
+then
+    echo -e "${_RED}Directory DOES NOT exist. Exiting...${_NC}"
+    exit 1
+fi
+touch $EXAMPLE_DIR/.debugmode
+
 # Expose ports
 echo -e "\n"
 read -p "Please input expose HTTP port (80): " HTTP_PORT
@@ -260,6 +275,7 @@ if [ "$HAVE_GPU" == "y" ] || [ "$HAVE_GPU" == "yes" ]; then
         -v $DATABASE_DIR:/database:rw \
         -v $APPLICATION_DIR:/appdata/share:rw \
         -v $USERDATA_DIR:/home/shared:rw \
+        -v $EXAMPLE_DIR:/s3/colab/content:rw \
         --name ecosystemx \
         --gpus all \
         --cap-add SYS_ADMIN \
@@ -275,6 +291,7 @@ else
         -v $DATABASE_DIR:/database:rw \
         -v $APPLICATION_DIR:/appdata/share:rw \
         -v $USERDATA_DIR:/home/shared:rw \
+        -v $EXAMPLE_DIR:/s3/colab/content:rw \
         --name ecosystemx \
         --cap-add SYS_ADMIN \
         --device /dev/fuse \
