@@ -178,6 +178,10 @@ then
     HAVE_GPU="no"
 else
     HAVE_GPU="yes"
+    read -p "Do you need install CUDA Toolkit [y, n]: " AGREE_INSTALL
+    if [ -z "$AGREE_INSTALL" ] || [ "$AGREE_INSTALL" != "y" ]; then
+        echo -e "${_RED}Ignore re-install CUDA Toolkit${_NC}"
+    else
     echo -e "${_BLUE}Checking root partition capacity${_NC}"
     ROOT_SIZE=$(df -B1 --output=source,size --total / | grep 'total' | awk '{print $2}')
     if [ "$ROOT_SIZE" -lt "$_MINIMUM_ROOT_SIZE" ];
@@ -187,17 +191,25 @@ else
     fi
     
     # NVIDIA CUDA Toolkit
-    echo -e "${_BLUE}Installing NVIDIA CUDA Toolkit 11.7${_NC}\n"
-    wget https://developer.download.nvidia.com/compute/cuda/11.7.1/local_installers/cuda_11.7.1_515.65.01_linux.run
-    sudo sh cuda_11.7.1_515.65.01_linux.run
+    echo -e "${_BLUE}Installing NVIDIA CUDA Toolkit 12.4.0${_NC}\n"
+    wget https://developer.download.nvidia.com/compute/cuda/12.4.0/local_installers/cuda_12.4.0_550.54.14_linux.run
+    sudo sh cuda_12.4.0_550.54.14_linux.run
+    fi
 
+    read -p "Do you need install NVIDIA Docker 2 [y, n]: " AGREE_INSTALL
+    if [ -z "$AGREE_INSTALL" ] || [ "$AGREE_INSTALL" != "y" ]; then
+        echo -e "${_RED}Ignore re-install NVIDIA Docker 2${_NC}"
+    else
     # NVIDIA CUDA Docker 2
     echo -e "${_BLUE}Installing NVIDIA Docker 2${_NC}\n"
     distribution=$(. /etc/os-release;echo $ID$VERSION_ID) \
-    && curl -s -L https://nvidia.github.io/libnvidia-container/$distribution/libnvidia-container.repo | sudo tee /etc/yum.repos.d/nvidia-container-toolkit.repo
+    #&& curl -s -L https://nvidia.github.io/libnvidia-container/$distribution/libnvidia-container.repo | sudo tee /etc/yum.repos.d/nvidia-container-toolkit.repo
+    sudo curl -s -L https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-container-toolkit.repo \
+    -o /etc/yum.repos.d/nvidia-container-toolkit.repo
     sudo yum clean expire-cache
     sudo yum install -y nvidia-docker2
     sudo systemctl restart docker
+    fi
 fi
 
 # Basic package

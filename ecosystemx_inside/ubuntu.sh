@@ -168,9 +168,9 @@ else
         fi
 
         # NVIDIA CUDA Toolkit
-        echo -e "${_BLUE}Installing NVIDIA CUDA Toolkit 11.7${_NC}\n"
-        wget https://developer.download.nvidia.com/compute/cuda/11.7.1/local_installers/cuda_11.7.1_515.65.01_linux.run
-        sudo sh cuda_11.7.1_515.65.01_linux.run
+        echo -e "${_BLUE}Installing NVIDIA CUDA Toolkit 12.4.0${_NC}\n"
+	wget https://developer.download.nvidia.com/compute/cuda/12.4.0/local_installers/cuda_12.4.0_550.54.14_linux.run
+        sudo sh cuda_12.4.0_550.54.14_linux.run
     fi
 
     read -p "Do you need install NVIDIA Docker 2 [y, n]: " AGREE_INSTALL
