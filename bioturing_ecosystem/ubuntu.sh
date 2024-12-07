@@ -254,7 +254,7 @@ echo -e "\n"
 read -p "SSO DOMAIN (example: @bioturing.com). Kindly use a comma separator passing multiple domains: " VALIDATION_STRING
 if [ -z "$VALIDATION_STRING" ];
 then
-    VALIDATION_STRING="*"
+    VALIDATION_STRING=""
     echo -e "${_BLUE}SSO ALLOWED DOMAINS : ${VALIDATION_STRING}${_NC}"
 else
     echo -e "${_BLUE}SSO ALLOWED DOMAINS : ${VALIDATION_STRING}${_NC}"    
@@ -317,6 +317,56 @@ else
     if [ -z "$AGREE_INSTALL" ] || [ "$AGREE_INSTALL" != "y" ]; then
         echo -e "${_RED}Ignore install CUDA Toolkit${_NC}"
     else
+            
+        # NVIDIA CUDA Toolkit
+        # Check if the CUDA installer file exists
+
+        if [ ! -f cuda_12.4.0_550.54.14_linux.run ]; then
+            echo -e "${_BLUE}Downloading NVIDIA CUDA Toolkit 12.4.0${_NC}\n"
+            wget https://developer.download.nvidia.com/compute/cuda/12.4.0/local_installers/cuda_12.4.0_550.54.14_linux.run
+        else
+            echo -e "${_BLUE}CUDA installer already exists. Skipping download.${_NC}\n"
+        fi
+
+        echo -e "${_BLUE}Installation CUDA Toolkit 12.4.0 started...${_NC}\n"
+        echo -e "${_BLUE}Please wait for a while...${_NC}\n"
+
+        sudo sh cuda_12.4.0_550.54.14_linux.run
+        sleep 120s
+
+        # Check for Nvidia driver and show detail
+        COUNT_DRIVER=`ls /proc/driver/ | grep -i nvidia | wc -l`
+        nvidia-smi
+        result=$?
+
+        if [ $COUNT_DRIVER -ge 1 ] || [ $result -eq 0 ]; then
+            echo "Cuda driver installation succeed."
+        else
+            echo "Cuda driver installation failed."
+            echo "Please visit site below and install cuda driver manually."
+            echo "https://developer.nvidia.com/cuda-downloads"
+            exit 1
+        fi
+    fi
+
+    read -p "Do you need install NVIDIA Docker 2 [y, n]: " AGREE_INSTALL
+    if [ -z "$AGREE_INSTALL" ] || [ "$AGREE_INSTALL" != "y" ]; then
+        echo -e "${_RED}Ignore re-install NVIDIA Docker 2${_NC}"
+    else
+        # NVIDIA CUDA Docker 2
+        echo -e "${_BLUE}Installing NVIDIA Docker 2${_NC}\n"
+        distribution=$(. /etc/os-release;echo $ID$VERSION_ID) &&\
+            curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg &&\
+            curl -s -L https://nvidia.github.io/libnvidia-container/$distribution/libnvidia-container.list | \
+            sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
+            sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+
+        sudo apt-get update
+        sudo apt-get install -y nvidia-docker2
+        sudo systemctl restart docker
+    fi
+fi
+
         echo -e "${_BLUE}Checking root partition capacity${_NC}"
         ROOT_SIZE=$(df -B1 --output=source,size --total / | grep 'total' | awk '{print $2}')
         if [ "$ROOT_SIZE" -lt "$_MINIMUM_ROOT_SIZE" ];
@@ -325,56 +375,20 @@ else
             exit 1
         fi
 
-        # NVIDIA CUDA Toolkit
-        echo -e "\n"
-        echo -e "${_BLUE}Installing NVIDIA CUDA Toolkit 11.7${_NC}\n"
-        wget https://developer.download.nvidia.com/compute/cuda/11.7.1/local_installers/cuda_11.7.1_515.65.01_linux.run
-        sudo sh cuda_11.7.1_515.65.01_linux.run --no-drm || true
-        sleep 120s;
-        # Check for Nvidia driver and show detail
-        COUNT_DRIVER=`ls /proc/driver/ | grep -i nvidia | wc -l`
-        nvidia-smi
-        result=$?
-     
-        if [ $COUNT_DRIVER -ge 1 ] || [ $result -eq 0 ]; then
-            echo "Cuda driver installation succeed."
-            nvidia-smi
-        else
-            echo "Cuda driver installation failed."
-            echo "Please visit site below and install cuda driver manually."
-            echo "https://developer.nvidia.com/cuda-downloads"
-            exit 1
-        fi
-    fi
-fi
 
-echo -e "\n"
-read -p "Do you need install NVIDIA Docker 2 [y, n]: " AGREE_INSTALL
-if [ -z "$AGREE_INSTALL" ] || [ "$AGREE_INSTALL" != "y" ]; then
-    echo -e "${_RED}Ignore install NVIDIA Docker 2${_NC}"
-else
-    # NVIDIA CUDA Docker 2
-    echo -e "\n"
-    echo -e "${_BLUE}Installing NVIDIA Docker 2${_NC}\n"
-    distribution=$(. /etc/os-release;echo $ID$VERSION_ID) \
-    && curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
-    && curl -s -L https://nvidia.github.io/libnvidia-container/$distribution/libnvidia-container.list | \
-        sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
-        sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
-    sudo apt update
-    sudo apt install nvidia-docker2
-    sudo systemctl restart docker
-fi
+    # NVIDIA Sets the compute mode to Default mode
+    echo -e "${_BLUE}NVIDIA Sets the compute mode to Default mode, allowing multiple processes to share the GPU.${_NC}\n"
+    nvidia-smi -c 0 || true
 
-# NVIDIA Sets the compute mode to Default mode
-echo -e "${_BLUE}NVIDIA Sets the compute mode to Default mode, allowing multiple processes to share the GPU.${_NC}\n"
-nvidia-smi -c 0 || true
+    # Enables Persistence Mode for the NVIDIA driver. 
+    echo -e "${_BLUE}Enables Persistence Mode for the NVIDIA driver${_NC}\n"
+    nvidia-smi -pm 1 || true
 
 # Check Bioturing ecosystem Version
 echo -e "\n"
-read -p "Please enter BBrowserX's VERSION (latest) 2.1.9 " BBVERSION
+read -p "Please enter BBrowserX's VERSION (latest) 2.1.10 " BBVERSION
 if [ -z "$BBVERSION" ]; then
-    BBVERSION="2.1.9"
+    BBVERSION="2.1.10"
 fi
 
 # Paramter config file updates

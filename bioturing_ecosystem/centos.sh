@@ -1,5 +1,6 @@
 #! /bin/bash
-# REDHAT OS
+
+# CentOS
 
 set -e
 
@@ -10,7 +11,26 @@ _NC='\033[0m' # No Color
 _MINIMUM_ROOT_SIZE=64424509440 # 60GB
 DT=`date "+%Y-%m-%d-%H%M%S"`
 
-echo -e "${_BLUE}BioTuring ecosystem RedHat installation version${_NC} ${_GREEN}stable${_NC}\n"
+echo -e "${_BLUE}BioTuring ecosystem CentOS installation version${_NC} ${_GREEN}stable${_NC}\n"
+
+# Detect CentOS version
+echo -e "${_BLUE}Detecting CentOS version...${_NC}"
+if [ -f /etc/os-release ]; then
+    . /etc/os-release
+    CENTOS_VERSION=${VERSION_ID%%.*}
+elif [ -f /etc/centos-release ]; then
+    CENTOS_VERSION=$(cat /etc/centos-release | sed 's/.*release \([0-9]*\).*/\1/')
+else
+    CENTOS_VERSION=$(uname -r | sed 's/^.*\(el[0-9]\+\).*$/\1/' | sed 's/el//')
+fi
+
+if [[ -z "$CENTOS_VERSION" ]]; then
+    echo -e "${_RED}Failed to detect CentOS version. Aborting.${_NC}"
+    exit 1
+fi
+
+echo -e "${_GREEN}Detected CentOS version: ${CENTOS_VERSION}${_NC}"
+
 
 # Verifying if Docker is already installed
 already_install_count=`pidof dockerd | wc -l`
@@ -98,7 +118,7 @@ function ssl_fun {
         fi
 }
 
-echo -e "${_BLUE}BioTuring ecosystem RHEL installation version${_NC} ${_GREEN}stable${_NC}\n"
+echo -e "${_BLUE}BioTuring ecosystem CentOS installation version${_NC} ${_GREEN}stable${_NC}\n"
 
 # Input user data volume
 echo -e "\n"
@@ -314,10 +334,8 @@ else
     sudo bash ./cert/rhel.sh
 fi
 
-#------------
-# Docker installation confirmation.
-#already_install_count=`ps -ef | grep -i docker | grep -v grep | wc -l`
-
+# Check Docker status
+#--------------------
 already_install_count=`pidof dockerd | wc -l`
 
 echo "Docker count : $already_install_count"
@@ -331,18 +349,12 @@ else
 echo -e "${_BLUE}Starting Docker Installation...${_NC}"
 echo -e "${_BLUE}Explore docker repo.${_NC}"
 echo -e "${_BLUE}https://download.docker.com/linux/${_NC}"
-echo -e "${_BLUE}https://download.docker.com/linux/rhel/${_NC}"
+echo -e "${_BLUE}https://download.docker.com/linux/centos/${_NC}"
 echo -e "${_BLUE}https://download.docker.com/linux/static/stable/x86_64/${_NC}"
 
-# Detect RHEL version
-RHEL_VERSION=$(uname -r | sed 's/^.*\(el[0-9]\+\).*$/\1/')
-
-# Add the Docker repository and install prerequisites for RHEL 7
-if [ "$RHEL_VERSION" == "el7" ]; then
-    echo -e "${_BLUE}Detected RHEL 7. Proceeding with RHEL 7 specific steps...${_NC}"
-
-    # Define the RHEL version (assumed to be set earlier)
-    RHEL_VERSION=$(cat /etc/redhat-release)
+# Add the Docker repository and install prerequisites for CentOS 7
+if [ "$CENTOS_VERSION" == "7" ]; then
+    echo -e "${_BLUE}Detected CentOS 7. Proceeding with CentOS 7 specific steps...${_NC}"
 
 cleaning_up() {
 sudo rm -rf /docker_static
@@ -351,9 +363,9 @@ sudo rm -f /usr/local/bin/dockerd
 sudo rm -f /usr/local/bin/docker-proxy
 sudo rm -f /usr/local/bin/ctr
 sudo rm -f /usr/local/bin/containerd
+sudo rm -f /etc/systemd/system/docker.service
 sudo rm -f /usr/local/bin/containerd-shim
 sudo rm -f /usr/local/bin/containerd-shim-runc-v2
-sudo rm -f /etc/systemd/system/docker.service
 #sudo kill $(pidof dockerd)
 sudo rm -rf /var/lib/docker
 sudo rm -rf /var/run/docker.sock
@@ -377,8 +389,6 @@ install_docker_static() {
     wget https://download.docker.com/linux/static/stable/x86_64/docker-27.3.1.tgz -O /docker_static/docker-27.3.1.tgz
 
     sleep 2
-
-    #sudo tar -xvf /docker_static/docker-20.10.24.tgz
 
 # Extract the file
 sudo tar -xvf /docker_static/docker-27.3.1.tgz -C /docker_static/ || {
@@ -467,7 +477,7 @@ read -p "Enter the number of your choice: " choice
 case $choice in
     1)
         echo -e "${_BLUE}Adding Docker's official repository for RHEL/CentOS 7...${_NC}"
-        sudo yum-config-manager --add-repo https://download.docker.com/linux/rhel/docker-ce.repo
+        sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 
         echo -e "${_BLUE}Installing prerequisites (slirp4netns, fuse-overlayfs, container-selinux)...${_NC}"
         sudo yum install -y slirp4netns fuse-overlayfs container-selinux
@@ -506,7 +516,7 @@ EOF
 
         # Verify installation
         echo -e "${_GREEN}Docker installation completed successfully!${_NC}"
-        #sudo systemctl status docker
+
         # Verify installation
         docker --version
         ;;
@@ -517,13 +527,13 @@ EOF
 esac
 
 else
-    echo -e "${_BLUE}Detected RHEL version other than 7. Adding Docker repository...${_NC}"
+    echo -e "${_BLUE}Detected CentOS version other than 7. Adding Docker repository...${_NC}"
 
     # Install yum-utils for repo management
     sudo yum install -y yum-utils
 
     # Add Docker's official repository (general case)
-    sudo yum-config-manager --add-repo https://download.docker.com/linux/rhel/docker-ce.repo
+    sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 
     # Install Docker CE and related components (common for all RHEL versions)
     echo -e "${_BLUE}Installing Docker CE, CLI, containerd.io, and Docker Compose plugin...${_NC}"
@@ -541,6 +551,7 @@ else
     docker --version
 fi
 fi 
+
 
 # Check for Nvidia driver and show detail
 COUNT_DRIVER=`ls /proc/driver/ | grep -i nvidia | wc -l`
@@ -587,9 +598,6 @@ else
             # Second time and beyond - Skip installation and update
             echo "Script has already been executed before. Skipping installation and update."
         fi
-
-        # NVIDIA CUDA Toolkit
-        # Check if the CUDA installer file exists
 
         if [ ! -f cuda_12.4.0_550.54.14_linux.run ]; then
             echo -e "${_BLUE}Downloading NVIDIA CUDA Toolkit 12.4.0${_NC}\n"
@@ -647,7 +655,6 @@ else
                 echo -e "${_GREEN}NVIDIA Docker 2 installation completed.${_NC}"
         fi
 fi
-
 
     echo -e "${_BLUE}Checking root partition capacity${_NC}"
     ROOT_SIZE=$(df -B1 --output=source,size --total / | grep 'total' | awk '{print $2}')
