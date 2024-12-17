@@ -404,7 +404,7 @@ else
     read -p "Do you need install CUDA Toolkit [y, n]: " AGREE_INSTALL
     if [ -z "$AGREE_INSTALL" ] || [ "$AGREE_INSTALL" != "y" ]; then
         echo -e "${_RED}Ignore re-install CUDA Toolkit${_NC}"
-      else
+    else
         # Define a flag file to track the first execution
         FLAG_FILE="/tmp/script_first_run_done"
 
@@ -468,44 +468,44 @@ else
             exit 1
         fi
     fi
-      
-        read -p "Do you need install NVIDIA Docker 2 [y, n]: " AGREE_INSTALL
-        if [ -z "$AGREE_INSTALL" ] || [ "$AGREE_INSTALL" != "y" ]; then
-            echo -e "${_RED}Ignore re-install NVIDIA Docker 2${_NC}"
+
+    read -p "Do you need install NVIDIA Docker 2 [y, n]: " AGREE_INSTALL
+    if [ -z "$AGREE_INSTALL" ] || [ "$AGREE_INSTALL" != "y" ]; then
+        echo -e "${_RED}Ignore re-install NVIDIA Docker 2${_NC}"
+        else
+            echo -e "${_BLUE}Installing NVIDIA Docker 2${_NC}\n"
+            echo -e "${_BLUE}https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/1.8.0/install-guide.html${_NC}\n"
+
+            echo -e "${_BLUE}Using repository URL: $REPO_URL${_NC}\n"
+            REPO_URL="https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-container-toolkit.repo"
+            # Add the repository
+            if curl -s -L "$REPO_URL" | sudo tee /etc/yum.repos.d/nvidia-container-toolkit.repo; then
+                echo -e "${_GREEN}Repository added successfully.${_NC}\n"
             else
-                echo -e "${_BLUE}Installing NVIDIA Docker 2${_NC}\n"
-                echo -e "${_BLUE}https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/1.8.0/install-guide.html${_NC}\n"
+                echo -e "${_RED}Failed to add repository. Please check the URL or network connectivity.${_NC}"
+                exit 1
+            fi
 
-                echo -e "${_BLUE}Using repository URL: $REPO_URL${_NC}\n"
-                REPO_URL="https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-container-toolkit.repo"
-                # Add the repository
-                if curl -s -L "$REPO_URL" | sudo tee /etc/yum.repos.d/nvidia-container-toolkit.repo; then
-                    echo -e "${_GREEN}Repository added successfully.${_NC}\n"
-                else
-                    echo -e "${_RED}Failed to add repository. Please check the URL or network connectivity.${_NC}"
-                    exit 1
-                fi
+            # Clean yum cache and install NVIDIA Docker 2
+            sudo yum clean expire-cache
+            echo -e "${_BLUE}Installing NVIDIA Docker 2...${_NC}\n"
+            sudo yum install -y nvidia-docker2
 
-                # Clean yum cache and install NVIDIA Docker 2
-                sudo yum clean expire-cache
-                echo -e "${_BLUE}Installing NVIDIA Docker 2...${_NC}\n"
-                sudo yum install -y nvidia-docker2
-
-                # Restart Docker
-                echo -e "${_BLUE}Restarting Docker service...${_NC}\n"
-                sudo systemctl restart docker
-                echo -e "${_GREEN}NVIDIA Docker 2 installation completed.${_NC}"
-        fi
+            # Restart Docker
+            echo -e "${_BLUE}Restarting Docker service...${_NC}\n"
+            sudo systemctl restart docker
+            echo -e "${_GREEN}NVIDIA Docker 2 installation completed.${_NC}"
+    fi
 fi
 
 
-    echo -e "${_BLUE}Checking root partition capacity${_NC}"
-    ROOT_SIZE=$(df -B1 --output=source,size --total / | grep 'total' | awk '{print $2}')
-    if [ "$ROOT_SIZE" -lt "$_MINIMUM_ROOT_SIZE" ];
-    then
-        echo -e "${_RED}The root partition should be at least 64GB${_NC}"
-        exit 1
-    fi
+echo -e "${_BLUE}Checking root partition capacity${_NC}"
+ROOT_SIZE=$(df -B1 --output=source,size --total / | grep 'total' | awk '{print $2}')
+if [ "$ROOT_SIZE" -lt "$_MINIMUM_ROOT_SIZE" ];
+then
+    echo -e "${_RED}The root partition should be at least 64GB${_NC}"
+    exit 1
+fi
 
 # Basic package
 echo -e "\n"
@@ -582,6 +582,7 @@ if [ "$HAVE_GPU" == "y" ] || [ "$HAVE_GPU" == "yes" ]; then
         -v $DATABASE_DIR:/database:rw \
         -v $USERDATA_DIR:/home/shared:rw \
         -v $EXAMPLE_DIR:/s3/colab/content:rw \
+        --shm-size="32gb" \
         --name ecosystemx \
         --gpus all \
         --cap-add SYS_ADMIN \
@@ -597,6 +598,7 @@ else
         -v $DATABASE_DIR:/database:rw \
         -v $USERDATA_DIR:/home/shared:rw \
         -v $EXAMPLE_DIR:/s3/colab/content:rw \
+        --shm-size="32gb" \
         --name ecosystemx \
         --cap-add SYS_ADMIN \
         --device /dev/fuse \
