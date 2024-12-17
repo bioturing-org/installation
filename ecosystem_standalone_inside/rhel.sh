@@ -273,6 +273,7 @@ if [ "$HAVE_GPU" == "y" ] || [ "$HAVE_GPU" == "yes" ]; then
         -v $DATABASE_DIR:/database:rw \
         -v $USERDATA_DIR:/home/shared:rw \
         -v $EXAMPLE_DIR:/s3/colab/content:rw \
+        --shm-size="32gb" \
         --name ecosystemx \
         --gpus all \
         --cap-add SYS_ADMIN \
@@ -288,6 +289,7 @@ else
         -v $DATABASE_DIR:/database:rw \
         -v $USERDATA_DIR:/home/shared:rw \
         -v $EXAMPLE_DIR:/s3/colab/content:rw \
+        --shm-size="32gb" \
         --name ecosystemx \
         --cap-add SYS_ADMIN \
         --device /dev/fuse \
