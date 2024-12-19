@@ -12,10 +12,10 @@ echo "Checking physical memory..."
 
   echo "Physical Memory : ${PHYSICAL_MEMORY_GB}GB"
 
-  # Check if physical memory is at least 64GB
-  if [ "$PHYSICAL_MEMORY_GB" -lt 64 ]; then
-    echo "Error: Insufficient physical memory. At least 64GB of RAM is required."
-    exit 1  # Exit the script if memory is less than 64GB
+  # Check if physical memory is at least 60GB
+  if [ "$PHYSICAL_MEMORY_GB" -lt 60 ]; then
+    echo "Error: Insufficient physical memory. At least 60GB of RAM is required."
+    exit 1  # Exit the script if memory is less than 60GB
   fi
 
 # Check Swap
