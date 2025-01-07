@@ -271,7 +271,7 @@ then
 fi
 
 ## Image is Public -- Docker login no longer require ##
-ECOSYSTEMX_VERSION="3.0.3"
+ECOSYSTEMX_VERSION="3.0.5"
 echo -e "${_BLUE}Pulling bioturing ECOSYSTEMX image: ${ECOSYSTEMX_VERSION} ${_NC}"
 echo -e "${_BLUE}Logging in to ${_NC}"
 ECOSYSTEMX_REPO="bioturing/ecosystemx:${ECOSYSTEMX_VERSION}"
