@@ -185,7 +185,8 @@ else
     distribution=$(. /etc/os-release;echo $ID$VERSION_ID) \
     && curl -s -L https://nvidia.github.io/libnvidia-container/$distribution/libnvidia-container.repo | sudo tee /etc/yum.repos.d/nvidia-container-toolkit.repo
     sudo yum clean expire-cache
-    sudo yum install -y nvidia-docker2
+    sudo yum install -y nvidia-container-toolkit
+    sudo nvidia-ctk runtime configure --runtime=docker
     sudo systemctl restart docker
     HAVE_GPU="yes"
 fi

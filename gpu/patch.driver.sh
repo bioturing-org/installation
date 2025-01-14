@@ -25,7 +25,8 @@ else
             sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
 
         sudo apt-get update
-        sudo apt-get install -y nvidia-docker2
+        sudo apt-get install -y nvidia-container-toolkit
+        sudo nvidia-ctk runtime configure --runtime=docker
     else
         # NVIDIA CUDA Toolkit
         echo -e "${_BLUE}Installing NVIDIA CUDA Toolkit 11.7${_NC}\n"
@@ -37,7 +38,9 @@ else
         distribution=$(. /etc/os-release;echo $ID$VERSION_ID) \
         && curl -s -L https://nvidia.github.io/libnvidia-container/$distribution/libnvidia-container.repo | sudo tee /etc/yum.repos.d/nvidia-container-toolkit.repo
         sudo yum clean expire-cache
-        sudo yum install -y nvidia-docker2
+        sudo yum install -y nvidia-container-toolkit
+        sudo nvidia-ctk runtime configure --runtime=docker
+
     fi
 
     read -s -p "K8s Container engine is Docker [y, n]: " AGREE_ENGINE

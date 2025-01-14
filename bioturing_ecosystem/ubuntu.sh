@@ -355,6 +355,10 @@ else
     else
         # NVIDIA CUDA Docker 2
         echo -e "${_BLUE}Installing NVIDIA Docker 2${_NC}\n"
+        echo -e "${_BLUE}Reference : https://runs-on.com/blog/3-how-to-setup-docker-with-nvidia-gpu-support-on-ubuntu-22${_NC}\n"
+        echo -e "${_BLUE}Reference : https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html#installing-with-yum-or-dnf${_NC}\n"
+        echo -e "${_BLUE}Reference : https://github.com/NVIDIA/nvidia-docker/issues/1268${_NC}\n"
+
         distribution=$(. /etc/os-release;echo $ID$VERSION_ID) &&\
             curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg &&\
             curl -s -L https://nvidia.github.io/libnvidia-container/$distribution/libnvidia-container.list | \
@@ -362,7 +366,8 @@ else
             sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
 
         sudo apt-get update
-        sudo apt-get install -y nvidia-docker2
+        sudo apt-get install -y nvidia-container-toolkit
+        sudo nvidia-ctk runtime configure --runtime=docker
         sudo systemctl restart docker
     fi
 fi
