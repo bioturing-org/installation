@@ -569,6 +569,9 @@ else
             else
                 echo -e "${_BLUE}Installing NVIDIA Docker 2${_NC}\n"
                 echo -e "${_BLUE}https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/1.8.0/install-guide.html${_NC}\n"
+                echo -e "${_BLUE}Reference : https://runs-on.com/blog/3-how-to-setup-docker-with-nvidia-gpu-support-on-ubuntu-22${_NC}\n"
+                echo -e "${_BLUE}Reference : https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html#installing-with-yum-or-dnf${_NC}\n"
+                echo -e "${_BLUE}Reference : https://github.com/NVIDIA/nvidia-docker/issues/1268${_NC}\n"
 
                 echo -e "${_BLUE}Using repository URL: $REPO_URL${_NC}\n"
                 REPO_URL="https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-container-toolkit.repo"
@@ -583,7 +586,8 @@ else
                 # Clean yum cache and install NVIDIA Docker 2
                 sudo yum clean expire-cache
                 echo -e "${_BLUE}Installing NVIDIA Docker 2...${_NC}\n"
-                sudo yum install -y nvidia-docker2
+                sudo yum install -y nvidia-container-toolkit
+                sudo nvidia-ctk runtime configure --runtime=docker
 
                 # Restart Docker
                 echo -e "${_BLUE}Restarting Docker service...${_NC}\n"

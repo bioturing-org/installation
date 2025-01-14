@@ -194,12 +194,17 @@ else
     else
     # NVIDIA CUDA Docker 2
     echo -e "${_BLUE}Installing NVIDIA Docker 2${_NC}\n"
+    echo -e "${_BLUE}Reference : https://runs-on.com/blog/3-how-to-setup-docker-with-nvidia-gpu-support-on-ubuntu-22${_NC}\n"
+    echo -e "${_BLUE}Reference : https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html#installing-with-yum-or-dnf${_NC}\n"
+    echo -e "${_BLUE}Reference : https://github.com/NVIDIA/nvidia-docker/issues/1268${_NC}\n"
+
     distribution=$(. /etc/os-release;echo $ID$VERSION_ID) \
     #&& curl -s -L https://nvidia.github.io/libnvidia-container/$distribution/libnvidia-container.repo | sudo tee /etc/yum.repos.d/nvidia-container-toolkit.repo
     sudo curl -s -L https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-container-toolkit.repo \
     -o /etc/yum.repos.d/nvidia-container-toolkit.repo
     sudo yum clean expire-cache
-    sudo yum install -y nvidia-docker2
+    sudo yum install -y nvidia-container-toolkit
+    sudo nvidia-ctk runtime configure --runtime=docker
     sudo systemctl restart docker
     fi
 fi
