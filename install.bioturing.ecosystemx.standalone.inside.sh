@@ -24,6 +24,11 @@ bash ./check_swap/check_swap.sh
 
 if [ -f /etc/lsb-release ]; then
     bash ./ecosystem_standalone_inside/ubuntu.sh
-else
-    bash ./ecosystem_standalone_inside/rhel.sh
+elif [ -f /etc/os-release ]; then
+    . /etc/os-release
+    if [[ "$ID" == "centos" ]]; then
+        bash ./ecosystem_standalone_inside/centos.sh
+    else
+        bash ./ecosystem_standalone_inside/rhel.sh
+    fi
 fi

@@ -288,6 +288,13 @@ sudo docker rm ecosystemx || true
 sudo docker container stop ecosystemx || true
 sudo docker container rm ecosystemx || true
 
+# Change env file
+mkdir -p /etc/docker
+if [ ! -f "/etc/docker/ecosystemx.env" ]; then
+    cp -rf ./ecosystemx_inside/ecosystemx.env /etc/docker/ecosystemx.env
+fi
+echo -e "${_BLUE}Using env file at: /etc/docker/ecosystemx.env${_NC}"
+
 # Pull BioTuring ecosystem
 echo -e "${_BLUE}Starting bioturing ECOSYSTEMX image${_NC}"
 if [ "$HAVE_GPU" == "y" ] || [ "$HAVE_GPU" == "yes" ]; then
@@ -302,7 +309,7 @@ if [ "$HAVE_GPU" == "y" ] || [ "$HAVE_GPU" == "yes" ]; then
     nvidia-smi -pm 1 || true
 
     sudo docker run -t -i \
-        --env-file ./ecosystemx_inside/ecosystemx.env \
+        --env-file /etc/docker/ecosystemx.env \
         -p ${HTTP_PORT}:80 \
         -p ${HTTPS_PORT}:443 \
         -v $DATABASE_DIR:/database:rw \
@@ -318,7 +325,7 @@ if [ "$HAVE_GPU" == "y" ] || [ "$HAVE_GPU" == "yes" ]; then
 else
     echo -e "${_RED}NO_GPU${_NC}\n"
     sudo docker run -t -i \
-        --env-file ./ecosystemx_inside/ecosystemx.env \
+        --env-file /etc/docker/ecosystemx.env \
         -p ${HTTP_PORT}:80 \
         -p ${HTTPS_PORT}:443 \
         -v $DATABASE_DIR:/database:rw \
