@@ -569,7 +569,7 @@ sudo docker container rm ecosystemx || true
 # Change env file
 mkdir -p /etc/docker
 if [ ! -f "/etc/docker/ecosystemx.env" ]; then
-    cp -rf ./ecosystemx_inside/ecosystemx.env /etc/docker/ecosystemx.env
+    cp -rf ./ecosystemx_inside_cuda12/ecosystemx.env /etc/docker/ecosystemx.env
 fi
 echo -e "${_BLUE}Using env file at: /etc/docker/ecosystemx.env${_NC}"
 
