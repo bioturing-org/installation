@@ -585,8 +585,8 @@ echo -e "${_BLUE}Using env file at: /etc/docker/ecosystemx.env${_NC}"
 
 # Pull BioTuring ecosystem
 echo -e "${_BLUE}Pulling bioturing ECOSYSTEMX image${_NC}"
+mkdir -p $DATABASE_DIR/certificates
 if [ "$HAVE_GPU" == "y" ] || [ "$HAVE_GPU" == "yes" ]; then
-    
     echo -e "${_BLUE}HAVE_GPU${_NC}\n"
     # NVIDIA Sets the compute mode to Default mode
     echo -e "${_BLUE}NVIDIA Sets the compute mode to Default mode, allowing multiple processes to share the GPU.${_NC}\n"
@@ -596,12 +596,12 @@ if [ "$HAVE_GPU" == "y" ] || [ "$HAVE_GPU" == "yes" ]; then
     echo -e "${_BLUE}Enables Persistence Mode for the NVIDIA driver${_NC}\n"
     nvidia-smi -pm 1 || true
     
-    
     sudo docker run -t -i \
         --env-file /etc/docker/ecosystemx.env \
         -p ${HTTP_PORT}:80 \
         -p ${HTTPS_PORT}:443 \
         -v $DATABASE_DIR:/database:rw \
+        -v $DATABASE_DIR/certificates:/usr/local/share/ca-certificates:rw \
         -v $USERDATA_DIR:/home/shared:rw \
         -v $EXAMPLE_DIR:/s3/colab/content:rw \
         --shm-size="32gb" \
@@ -618,6 +618,7 @@ else
         -p ${HTTP_PORT}:80 \
         -p ${HTTPS_PORT}:443 \
         -v $DATABASE_DIR:/database:rw \
+        -v $DATABASE_DIR/certificates:/usr/local/share/ca-certificates:rw \
         -v $USERDATA_DIR:/home/shared:rw \
         -v $EXAMPLE_DIR:/s3/colab/content:rw \
         --shm-size="32gb" \
