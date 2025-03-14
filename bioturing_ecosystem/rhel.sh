@@ -48,6 +48,7 @@ CONTAINER_NAME="bioturing-ecosystem"
 # Default folders 
 DEFAULT_USER_DATA_VOLUME="/bioturing_ecosystem/user_data"
 DEFAULT_APP_DATA_VOLUME="/bioturing_ecosystem/app_data"
+DEFAULT_DATABASE_VOLUME="/bioturing_ecosystem/database"
 DEFAULT_SSL_VOLUME="/config/ssl"
 DEFAULT_SCRIPT_LOG_VOLUME="/bioturing_ecosystem/script_log"
 
@@ -130,6 +131,22 @@ then
     exit 1
 else
     echo -e "${_BLUE}Application data storage : $APP_DATA_VOLUME${_NC}\n"
+fi
+
+# Input database volume
+echo -e "\n"
+read -p "database volume (this is the place to store the binary files of all services : /bioturing_ecosystem/app_data): " APP_DATA_VOLUME
+if [ -z "$DATABASE_VOLUME" ];
+then
+    DATABASE_VOLUME=${DEFAULT_DATABASE_VOLUME}
+fi
+
+if [ ! -d "$DATABASE_VOLUME" ];
+then
+    echo -e "${_RED}Directory DOES NOT exist. Exiting...${_NC}"
+    exit 1
+else
+    echo -e "${_BLUE}Database data storage : $DATABASE_VOLUME${_NC}\n"
 fi
 
 # Input log volume
@@ -673,9 +690,9 @@ fi
 
 # Check Bioturing ecosystem Version
 echo -e "\n"
-read -p "Please enter BBrowserX's VERSION (latest) 2.1.10: " BBVERSION
+read -p "Please enter BBrowserX's VERSION (latest) 3.0.1: " BBVERSION
 if [ -z "$BBVERSION" ]; then
-    BBVERSION="2.1.10"
+    BBVERSION="3.0.1"
 fi
 
 # Paramter config file updates
@@ -737,7 +754,7 @@ echo -e "\n"
 echo -e "${_BLUE}Pulling bioturing ecosystem image${_NC}"
 if [ "$SSL_CONFIRM" == "yes" ]  || [ "$SSL_CONFIRM" == "y" ]; then
     echo -e "${_BLUE} SSL CONFIRMED.${_NC}\n"
-        docker pull bioturing/bioturing-ecosystem:${BBVERSION}
+        docker pull bioturing/bioturing-ecosystem12:${BBVERSION}
         docker run -t -i \
         -e BASE_URL="$BASE_URL" \
         -e BIOTURING_TOKEN="$BIOTURING_TOKEN" \
@@ -753,20 +770,20 @@ if [ "$SSL_CONFIRM" == "yes" ]  || [ "$SSL_CONFIRM" == "y" ]; then
         -p ${HTTPS_PORT}:443 \
         -v "$APP_DATA_VOLUME":/data/app_data \
         -v "$USER_DATA_VOLUME":/data/user_data \
+        -v "$DATABASE_VOLUME":/database \
         -v "$SSL_VOLUME":/config/ssl \
         --name bioturing-ecosystem \
         --cap-add SYS_ADMIN \
-        --cap-add NET_ADMIN \
         --device /dev/fuse \
         --security-opt apparmor:unconfined \
         --shm-size=${shm_sizep} \
         --gpus all \
         -d \
         --privileged --restart always \
-        bioturing/bioturing-ecosystem:${BBVERSION} 2>&1  | tee -a ${TALK2DATA_LOG}
+        bioturing/bioturing-ecosystem12:${BBVERSION} 2>&1  | tee -a ${TALK2DATA_LOG}
 else
     echo -e "${_RED}NO SSL${_NC}\n"
-        docker pull bioturing/bioturing-ecosystem:${BBVERSION}
+        docker pull bioturing/bioturing-ecosystem12:${BBVERSION}
         docker run -t -i \
         -e BASE_URL="$BASE_URL" \
         -e BIOTURING_TOKEN="$BIOTURING_TOKEN" \
@@ -781,16 +798,16 @@ else
         -p ${HTTP_PORT}:3000 \
         -v "$APP_DATA_VOLUME":/data/app_data \
         -v "$USER_DATA_VOLUME":/data/user_data \
+        -v "$DATABASE_VOLUME":/database \
         --name bioturing-ecosystem \
         --cap-add SYS_ADMIN \
-        --cap-add NET_ADMIN \
         --device /dev/fuse \
         --security-opt apparmor:unconfined \
         --shm-size=${shm_sizep} \
         --gpus all \
         -d \
         --privileged --restart always \
-        bioturing/bioturing-ecosystem:${BBVERSION} 2>&1  | tee -a ${TALK2DATA_LOG}
+        bioturing/bioturing-ecosystem12:${BBVERSION} 2>&1  | tee -a ${TALK2DATA_LOG}
 fi
 
 echo -e "\n"
