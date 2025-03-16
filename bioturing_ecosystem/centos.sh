@@ -800,7 +800,8 @@ else
         -e https_proxy="$HTTPS_PROXY" \
         -e no_proxy="$NO_PROXY" \
         -e N_TQ_WORKERS="$N_TQ_WORKERS" \
-        -p ${HTTP_PORT}:3000 \
+        -p ${HTTP_PORT}:80 \
+        -p ${HTTPS_PORT}:443 \
         -v "$APP_DATA_VOLUME":/data/app_data \
         -v "$USER_DATA_VOLUME":/data/user_data \
         -v "$DATABASE_VOLUME":/database \
