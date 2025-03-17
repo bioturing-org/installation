@@ -775,6 +775,8 @@ if [ "$SSL_CONFIRM" == "yes" ]  || [ "$SSL_CONFIRM" == "y" ]; then
         -p ${HTTPS_PORT}:443 \
         -v "$APP_DATA_VOLUME":/data/app_data \
         -v "$USER_DATA_VOLUME":/data/user_data \
+        -v "$APP_DATA_VOLUME":/appdata/share \
+        -v "$USER_DATA_VOLUME":/home/shared \
         -v "$DATABASE_VOLUME":/database \
         -v "$SSL_VOLUME":/config/ssl \
         --name bioturing-ecosystem \
@@ -804,6 +806,8 @@ else
         -p ${HTTPS_PORT}:443 \
         -v "$APP_DATA_VOLUME":/data/app_data \
         -v "$USER_DATA_VOLUME":/data/user_data \
+        -v "$APP_DATA_VOLUME":/appdata/share \
+        -v "$USER_DATA_VOLUME":/home/shared \
         -v "$DATABASE_VOLUME":/database \
         --name bioturing-ecosystem \
         --cap-add SYS_ADMIN \
