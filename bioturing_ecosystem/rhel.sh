@@ -135,7 +135,7 @@ fi
 
 # Input database volume
 echo -e "\n"
-read -p "database volume (this is the place to store the binary files of all services : /bioturing_ecosystem/app_data): " APP_DATA_VOLUME
+read -p "database volume (this is the place to store the binary files of all services : /bioturing_ecosystem/database): " DATABASE_VOLUME
 if [ -z "$DATABASE_VOLUME" ];
 then
     DATABASE_VOLUME=${DEFAULT_DATABASE_VOLUME}
