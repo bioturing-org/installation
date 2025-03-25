@@ -14,7 +14,7 @@ DT=`date "+%Y-%m-%d-%H%M%S"`
 # Default Parameter
 CONTAINER_NAME="bioturing-ecosystem"
 
-# Default folders 
+# Default folders
 DEFAULT_USER_DATA_VOLUME="/bioturing_ecosystem/user_data"
 DEFAULT_APP_DATA_VOLUME="/bioturing_ecosystem/app_data"
 DEFAULT_DATABASE_VOLUME="/bioturing_ecosystem/database"
@@ -43,7 +43,7 @@ function port_is_ok {
 
 function ssl_fun {
     read -p "ssl volume /config/ssl (this directory must contain two files: tls.crt and tls.key from your SSL certificate for HTTPS): " SSL_VOLUME
-    
+
     if [ -z "$SSL_VOLUME" ];
     then
         SSL_VOLUME=${DEFAULT_SSL_VOLUME}
@@ -58,7 +58,7 @@ function ssl_fun {
 
     NO_OF_FILE=`ls ${SSL_VOLUME}/tls* | wc -l`
         if [[ $NO_OF_FILE -ne 2 ]]
-            then 
+            then
             ls -lrt $SSL_VOLUME
             echo -e "${_RED}tls files DOES NOT exist. Exiting...${_NC}"
             exit 1
@@ -121,7 +121,7 @@ fi
 
 # Input log volume
 echo -e "\n"
-read -p "script log volume (this is the place to store script execution log : /bioturing_ecosystem/script_log): " SCRIPT_LOG_VOLUME
+read -p "script log volume (this is the place to store script execution log : /bioturing_ecosystem/script_log): " SCRIPT_LOG_VOLUME  
 if [ -z "$SCRIPT_LOG_VOLUME" ];
 then
     SCRIPT_LOG_VOLUME=${DEFAULT_SCRIPT_LOG_VOLUME}
@@ -179,7 +179,7 @@ fi
 # /dev/shm confirmation.
 T_MEM=`free -g | grep Mem: | awk -F " " '{ print $2}'`
 
-if [[ $T_MEM -eq 0 ]] 
+if [[ $T_MEM -eq 0 ]]
 then
     echo -e "\n"
     echo -e "${_RED}Sorry physical memory is not enough to install BBROWSERX. Exiting...${_NC}"
@@ -189,12 +189,12 @@ else
     echo -e "\n"
     echo -e "${_BLUE}Total memory in GB $T_MEM${_NC}\n"
     echo -e "${_BLUE}Kindly allocate shared memory that would be 1/2 of total memory.${_NC}\n"
-    echo -e "${_BLUE}SHM SIZE : $(( $T_MEM / 2 )) ${_NC}" 
+    echo -e "${_BLUE}SHM SIZE : $(( $T_MEM / 2 )) ${_NC}"
 fi
 
 FSTAB_ENTRY_CK=`cat /etc/fstab | grep -i shm | wc -l`
 
-if [[ $FSTAB_ENTRY_CK -eq 0 ]] 
+if [[ $FSTAB_ENTRY_CK -eq 0 ]]
 then
     echo -e "\n"
     echo -e "${_GREEN}Current /etc/fstab file contents.${_NC}\n"
@@ -222,7 +222,7 @@ fi
 
 echo -e "\n"
 echo -e "${_RED}If you are using Nginx or any proxy kindly do not use port 80, If already in the service. ${_NC}\n"
-echo -e "${_RED}If you are using Load balancer, please make sure HTTP port forwarding or HTTP port should be allow from LB.${_NC}\n"
+echo -e "${_RED}If you are using Load balancer, please make sure HTTP port forwarding or HTTP port should be allow from LB.${_NC}\n" 
     read -p "Please input expose HTTP port (80): " HTTP_PORT
     if [ -z "$HTTP_PORT" ]; then
         HTTP_PORT=80
@@ -237,34 +237,47 @@ echo -e "${_RED}If you are using Load balancer, please make sure HTTP port forwa
         exit 1
     fi
 
+
+    read -p "Please input expose HTTPS port (443): " HTTPS_PORT                                                                      
+
+    if [ -z "$HTTPS_PORT" ]; then                                                                                                    
+
+        HTTPS_PORT=443                                                                                                               
+
+        echo -e "${_BLUE}HTTPS port : ${HTTPS_PORT}${_NC}"                                                                           
+
+    fi                                                                                                                               
+
+                                                                                                                                     
+
+    HTTPS_PORT_VALID=`port_is_ok ${HTTPS_PORT}`                                                                                      
+
+    if [ "$HTTPS_PORT_VALID" == "ok" ]; then                                                                                         
+
+        echo -e "${_BLUE}HTTPS port is OK${_NC}\n"                                                                                   
+
+    else                                                                                                                             
+
+        echo -e "${_RED}Invalid expose HTTPS port: ${HTTPS_PORT}${_NC}\n"                                                            
+
+        exit 1                                                                                                                       
+
+    fi
+
  # Input SSL volume
 echo -e "\n"
 read -p "Would you like to configure SSL [y/n] : " SSL_CONFIRM
 echo -e "\n"
 if [ -z "$SSL_CONFIRM" ] || [ "$SSL_CONFIRM" != "y" ]; then
-    echo -e "${_BLUE}Kindly configure SSL with your Proxy / Loadblancer.${_NC}"  
+    echo -e "${_BLUE}Kindly configure SSL with your Proxy / Loadblancer.${_NC}"
 else
     SSL_CONFIRM="y"
-    echo -e "\n"
-    read -p "Please input expose HTTPS port (443): " HTTPS_PORT
-    if [ -z "$HTTPS_PORT" ]; then
-        HTTPS_PORT=443
-        echo -e "${_BLUE}HTTPS port : ${HTTPS_PORT}${_NC}"
-    fi
-
-    HTTPS_PORT_VALID=`port_is_ok ${HTTPS_PORT}`
-    if [ "$HTTPS_PORT_VALID" == "ok" ]; then
-        echo -e "${_BLUE}HTTPS port is OK${_NC}\n"
-    else
-        echo -e "${_RED}Invalid expose HTTPS port: ${HTTPS_PORT}${_NC}\n"
-        exit 1
-    fi
     # ssl information
-    echo -e "${_BLUE}SSL Verification.${_NC}"  
+    echo -e "${_BLUE}SSL Verification.${_NC}"
     # Call SSL config function.
     ssl_fun
 fi
-    
+
 # Input SSO Domain
 echo -e "\n"
 read -p "SSO DOMAIN (example: @bioturing.com). Kindly use a comma separator passing multiple domains: " VALIDATION_STRING
@@ -273,7 +286,7 @@ then
     VALIDATION_STRING=""
     echo -e "${_BLUE}SSO ALLOWED DOMAINS : ${VALIDATION_STRING}${_NC}"
 else
-    echo -e "${_BLUE}SSO ALLOWED DOMAINS : ${VALIDATION_STRING}${_NC}"    
+    echo -e "${_BLUE}SSO ALLOWED DOMAINS : ${VALIDATION_STRING}${_NC}"
 fi
 
 # Worker Count
@@ -333,7 +346,7 @@ else
     if [ -z "$AGREE_INSTALL" ] || [ "$AGREE_INSTALL" != "y" ]; then
         echo -e "${_RED}Ignore install CUDA Toolkit${_NC}"
     else
-            
+
         # NVIDIA CUDA Toolkit
         # Check if the CUDA installer file exists
 
@@ -364,6 +377,7 @@ else
             exit 1
         fi
     fi
+fi
 
     read -p "Do you need install NVIDIA Docker 2 [y, n]: " AGREE_INSTALL
     if [ -z "$AGREE_INSTALL" ] || [ "$AGREE_INSTALL" != "y" ]; then
@@ -371,7 +385,7 @@ else
     else
         # NVIDIA CUDA Docker 2
         echo -e "${_BLUE}Installing NVIDIA Docker 2${_NC}\n"
-        echo -e "${_BLUE}Reference : https://runs-on.com/blog/3-how-to-setup-docker-with-nvidia-gpu-support-on-ubuntu-22${_NC}\n"
+        echo -e "${_BLUE}Reference : https://runs-on.com/blog/3-how-to-setup-docker-with-nvidia-gpu-support-on-ubuntu-22${_NC}\n"    
         echo -e "${_BLUE}Reference : https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html#installing-with-yum-or-dnf${_NC}\n"
         echo -e "${_BLUE}Reference : https://github.com/NVIDIA/nvidia-docker/issues/1268${_NC}\n"
 
@@ -386,7 +400,6 @@ else
         sudo nvidia-ctk runtime configure --runtime=docker
         sudo systemctl restart docker
     fi
-fi
 
         echo -e "${_BLUE}Checking root partition capacity${_NC}"
         ROOT_SIZE=$(df -B1 --output=source,size --total / | grep 'total' | awk '{print $2}')
@@ -401,7 +414,7 @@ fi
     echo -e "${_BLUE}NVIDIA Sets the compute mode to Default mode, allowing multiple processes to share the GPU.${_NC}\n"
     nvidia-smi -c 0 || true
 
-    # Enables Persistence Mode for the NVIDIA driver. 
+    # Enables Persistence Mode for the NVIDIA driver.
     echo -e "${_BLUE}Enables Persistence Mode for the NVIDIA driver${_NC}\n"
     nvidia-smi -pm 1 || true
 
