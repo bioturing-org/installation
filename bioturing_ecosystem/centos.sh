@@ -288,15 +288,6 @@ echo -e "${_RED}If you are using Load balancer, please make sure HTTP port forwa
         exit 1
     fi
 
-# Input SSL volume
-echo -e "\n"
-read -p "Would you like to configure SSL [y/n] : " SSL_CONFIRM
-echo -e "\n"
-if [ -z "$SSL_CONFIRM" ] || [ "$SSL_CONFIRM" != "y" ]; then
-    echo -e "${_BLUE}Kindly configure SSL with your Proxy / Loadblancer.${_NC}"
-else
-    SSL_CONFIRM="y"
-    echo -e "\n"
     read -p "Please input expose HTTPS port (443): " HTTPS_PORT
     if [ -z "$HTTPS_PORT" ]; then
         HTTPS_PORT=443
@@ -310,6 +301,17 @@ else
         echo -e "${_RED}Invalid expose HTTPS port: ${HTTPS_PORT}${_NC}\n"
         exit 1
     fi
+
+# Input SSL volume
+echo -e "\n"
+read -p "Would you like to configure SSL [y/n] : " SSL_CONFIRM
+echo -e "\n"
+if [ -z "$SSL_CONFIRM" ] || [ "$SSL_CONFIRM" != "y" ]; then
+    echo -e "${_BLUE}Kindly configure SSL with your Proxy / Loadblancer.${_NC}"
+else
+    SSL_CONFIRM="y"
+    echo -e "\n"
+    
     # ssl information
     echo -e "${_BLUE}SSL Verification.${_NC}"
     # Call SSL config function.
@@ -643,6 +645,7 @@ else
             exit 1
         fi
     fi
+fi
         read -p "Do you need install NVIDIA Docker 2 [y, n]: " AGREE_INSTALL
         if [ -z "$AGREE_INSTALL" ] || [ "$AGREE_INSTALL" != "y" ]; then
             echo -e "${_RED}Ignore re-install NVIDIA Docker 2${_NC}"
@@ -674,7 +677,7 @@ else
                 sudo systemctl restart docker
                 echo -e "${_GREEN}NVIDIA Docker 2 installation completed.${_NC}"
         fi
-fi
+
 
     echo -e "${_BLUE}Checking root partition capacity${_NC}"
     ROOT_SIZE=$(df -B1 --output=source,size --total / | grep 'total' | awk '{print $2}')
