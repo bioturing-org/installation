@@ -72,12 +72,27 @@ check_swap() {
   fi
 }
 
+# Function to get root partition stats (in GB)
+print_root_partition_stats() {
+  echo -e "\nRoot Partition Info:"
+  df -h / | awk 'NR==1 || NR==2'  # Show header and root partition
+}
+
+# Main function to execute the script
 # Main function to execute the script
 main() {
-  get_physical_memory    # Get total physical memory
-  check_swap             # Check if swap is available or needs to be created
+  get_physical_memory        # Step 1: Show total physical memory
+  print_root_partition_stats # Step 2: Show root partition space info
+
+  echo
+  read -p "Do you want to create swap if it's not available? [y/n]: " CONFIRM_SWAP
+
+  if [[ "$CONFIRM_SWAP" == "y" || "$CONFIRM_SWAP" == "Y" ]]; then
+    check_swap               # Step 3: Check or create swap only if confirmed
+  else
+    echo "Swap creation skipped by user."
+  fi
 }
 
 # Run the script
 main
-
