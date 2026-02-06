@@ -240,11 +240,11 @@ read -p "Do you want to install BioEngineX? [y/n]: " AGREE_ENGINEX
 echo -e "\n"
 
 if [[ "$AGREE_ENGINEX" == "y" || "$AGREE_ENGINEX" == "Y" ]]; then
-    ENGINEX_DATA_VOLUME="${USER_DATA_VOLUME}/bioenginex"
-    if [ ! -d ${ENGINEX_DATA_VOLUME} ]; then
-        mkdir -p ${ENGINEX_DATA_VOLUME}
-        chown -R www-data:www-data ${ENGINEX_DATA_VOLUME} || true
-        chmod -R 755 ${ENGINEX_DATA_VOLUME} || true
+    BIOENGINEX_DATA_VOLUME="${USER_DATA_VOLUME}/bioenginex"
+    if [ ! -d ${BIOENGINEX_DATA_VOLUME} ]; then
+        mkdir -p ${BIOENGINEX_DATA_VOLUME}
+        chown -R www-data:www-data ${BIOENGINEX_DATA_VOLUME} || true
+        chmod -R 755 ${BIOENGINEX_DATA_VOLUME} || true
     fi
 
     # Check JWT_SECRET
@@ -254,28 +254,28 @@ if [[ "$AGREE_ENGINEX" == "y" || "$AGREE_ENGINEX" == "Y" ]]; then
     fi
 
     echo -e "\n"
-    echo "stopping $ENGINEX_CONTAINER_NAME"
-    sudo docker stop $ENGINEX_CONTAINER_NAME || true
+    echo "stopping $BIOENGINEX_CONTAINER_NAME"
+    sudo docker stop $BIOENGINEX_CONTAINER_NAME || true
     echo -e "\n"
-    echo "removing $ENGINEX_CONTAINER_NAME"
-    sudo docker rm $ENGINEX_CONTAINER_NAME || true
+    echo "removing $BIOENGINEX_CONTAINER_NAME"
+    sudo docker rm $BIOENGINEX_CONTAINER_NAME || true
 
     # Pull BioTuring ecosystem
     echo -e "${_BLUE}Pulling bioturing BioEngineX image${_NC}"
 
-    docker pull bioturing/bioenginex:${ENGINEX_VERSION}
+    docker pull bioturing/bioenginex:${BIOENGINEX_VERSION}
     docker run -t -i \
         --env-file /etc/docker/bioturing_ecosystem.env \
-        -p ${ENGINEX_HTTP_PORT}:35576 \
-        -p ${ENGINEX_GRPC_PORT}:35577 \
+        -p ${BIOENGINEX_HTTP_PORT}:35576 \
+        -p ${BIOENGINEX_RPC_PORT}:35577 \
         -v "$USER_DATA_VOLUME":/home/shared \
-        -v "$ENGINEX_DATA_VOLUME":/home/enginex \
-        --name "$ENGINEX_CONTAINER_NAME" \
+        -v "$BIOENGINEX_DATA_VOLUME":/home/enginex \
+        --name "$BIOENGINEX_CONTAINER_NAME" \
         --shm-size="8gb" \
         --gpus all \
         -d \
         --privileged --restart always \
-        bioturing/bioenginex:${ENGINEX_VERSION}
+        bioturing/bioenginex:${BIOENGINEX_VERSION}
 else
     echo -e "${_GREEN}Skipped BioEngineX.${_NC}\n"
 fi
