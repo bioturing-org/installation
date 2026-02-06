@@ -233,6 +233,53 @@ else
     exit 1
 fi
 
+# Confirm BioEngineX
+
+echo -e "\n"
+read -p "Do you want to install BioEngineX? [y/n]: " AGREE_ENGINEX
+echo -e "\n"
+
+if [[ "$AGREE_ENGINEX" == "y" || "$AGREE_ENGINEX" == "Y" ]]; then
+    BIOENGINEX_DATA_VOLUME="${USER_DATA_VOLUME}/bioenginex"
+    if [ ! -d ${BIOENGINEX_DATA_VOLUME} ]; then
+        mkdir -p ${BIOENGINEX_DATA_VOLUME}
+        chown -R www-data:www-data ${BIOENGINEX_DATA_VOLUME} || true
+        chmod -R 755 ${BIOENGINEX_DATA_VOLUME} || true
+    fi
+
+    # Check JWT_SECRET
+    if [ -z "$JWT_SECRET" ] || [ "$JWT_SECRET" != "" ]; then
+        echo -e "${_RED}Please add JWT_SECRET. Exiting...${_NC}"
+        exit 1
+    fi
+
+    echo -e "\n"
+    echo "stopping $BIOENGINEX_CONTAINER_NAME"
+    sudo docker stop $BIOENGINEX_CONTAINER_NAME || true
+    echo -e "\n"
+    echo "removing $BIOENGINEX_CONTAINER_NAME"
+    sudo docker rm $BIOENGINEX_CONTAINER_NAME || true
+
+    # Pull BioTuring ecosystem
+    echo -e "${_BLUE}Pulling bioturing BioEngineX image${_NC}"
+
+    docker pull bioturing/bioenginex:${BIOENGINEX_VERSION}
+    docker run -t -i \
+        --env-file /etc/docker/bioturing_ecosystem.env \
+        -p ${BIOENGINEX_HTTP_PORT}:35576 \
+        -p ${BIOENGINEX_RPC_PORT}:35577 \
+        -v "$USER_DATA_VOLUME":/home/shared \
+        -v "$BIOENGINEX_DATA_VOLUME":/home/enginex \
+        --name "$BIOENGINEX_CONTAINER_NAME" \
+        --shm-size="8gb" \
+        --gpus all \
+        -d \
+        --privileged --restart always \
+        bioturing/bioenginex:${BIOENGINEX_VERSION}
+else
+    echo -e "${_GREEN}Skipped BioEngineX.${_NC}\n"
+fi
+
 
 # Stop already running container.
 echo -e "\n"
@@ -255,25 +302,25 @@ fi
 # Pull BioTuring ecosystem
 echo -e "${_BLUE}Pulling bioturing ecosystem image${_NC}"
 
-        docker pull bioturing/bioturing-ecosystem12:${BBVERSION}
-        docker run -t -i \
-        --env-file /etc/docker/bioturing_ecosystem.env \
-        -p ${HTTP_PORT}:80 \
-        -p ${HTTPS_PORT}:443 \
-        -v "$APP_DATA_VOLUME":/data/app_data \
-        -v "$USER_DATA_VOLUME":/data/user_data \
-        -v "$USER_DATA_VOLUME":/home/shared \
-        -v "$DATABASE_VOLUME":/database \
-        -v "$SSL_VOLUME":/config/ssl \
-        --name "$CONTAINER_NAME" \
-        --cap-add SYS_ADMIN \
-        --device /dev/fuse \
-        --security-opt apparmor:unconfined \
-        --shm-size=${shm_size} \
-        --gpus all \
-        -d \
-        --privileged --restart always \
-        bioturing/bioturing-ecosystem12:${BBVERSION}
+docker pull bioturing/bioturing-ecosystem12:${BBVERSION}
+docker run -t -i \
+    --env-file /etc/docker/bioturing_ecosystem.env \
+    -p ${HTTP_PORT}:80 \
+    -p ${HTTPS_PORT}:443 \
+    -v "$APP_DATA_VOLUME":/data/app_data \
+    -v "$USER_DATA_VOLUME":/data/user_data \
+    -v "$USER_DATA_VOLUME":/home/shared \
+    -v "$DATABASE_VOLUME":/database \
+    -v "$SSL_VOLUME":/config/ssl \
+    --name "$CONTAINER_NAME" \
+    --cap-add SYS_ADMIN \
+    --device /dev/fuse \
+    --security-opt apparmor:unconfined \
+    --shm-size=${shm_size} \
+    --gpus all \
+    -d \
+    --privileged --restart always \
+    bioturing/bioturing-ecosystem12:${BBVERSION}
 
 echo "-----------------------------------------------------------------"
 
