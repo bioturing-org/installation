@@ -264,7 +264,7 @@ if [[ "$AGREE_ENGINEX" == "y" || "$AGREE_ENGINEX" == "Y" ]]; then
         chmod -R 755 ${BIOENGINEX_DATA_VOLUME} || true
     fi
 
-    # Check JWT_SECRET
+    # JWT_SECRET is compulsory for BioEngineX
     if [ -z "$JWT_SECRET" ]; then
         echo -e "${_RED}Please add JWT_SECRET to the env file. Exiting...${_NC}"
         exit 1

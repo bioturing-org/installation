@@ -6,6 +6,7 @@ set -e
 _RED='\033[0;31m'
 _GREEN='\033[0;32m'
 _BLUE='\033[0;34m'
+_YELLOW='\033[0;33m'
 _NC='\033[0m' # No Color
 _MINIMUM_ROOT_SIZE=64424509440 # 60GB
 DT=`date "+%Y-%m-%d-%H%M%S"`
@@ -487,6 +488,9 @@ unset HTTP_PROXY HTTPS_PROXY NO_PROXY
 unset N_TQ_WORKERS BBVERSION
 unset APP_DATA_VOLUME USER_DATA_VOLUME DATABASE_VOLUME SSL_VOLUME
 unset HTTP_PORT HTTPS_PORT
+unset DOCKER_NETWORK JWT_SECRET
+unset BIOENGINEX_CONTAINER_NAME BIOENGINEX_VERSION BIOENGINEX_HOST
+unset BIOENGINEX_HTTP_PORT BIOENGINEX_RPC_PORT NVIDIA_DISABLE_REQUIRE
 
 # Source the new values
 if [ -f /etc/docker/bioturing_ecosystem.env ]; then
@@ -497,6 +501,19 @@ if [ -f /etc/docker/bioturing_ecosystem.env ]; then
 else
     echo -e "${_RED}ERROR: Environment file not found at /etc/docker/bioturing_ecosystem.env. Exiting.${_NC}"
     exit 1
+fi
+
+# === Shared Docker network (Ecosystem <-> BioEngineX) ===
+# On a user-defined network, Docker's embedded DNS lets each container
+# resolve the other BY NAME (e.g. http://bioturing-bioenginex:35576),
+# so no hard-coded IPs (like 172.17.0.1) are ever needed.
+DOCKER_NETWORK="${DOCKER_NETWORK:-bioturing-net}"
+
+if docker network inspect "$DOCKER_NETWORK" > /dev/null 2>&1; then
+    echo -e "${_GREEN}Docker network '${DOCKER_NETWORK}' already exists. Reusing it.${_NC}\n"
+else
+    echo -e "${_BLUE}Creating Docker network: ${DOCKER_NETWORK}${_NC}\n"
+    docker network create --driver bridge "$DOCKER_NETWORK"
 fi
 
 # Confirm BioEngineX
@@ -513,9 +530,9 @@ if [[ "$AGREE_ENGINEX" == "y" || "$AGREE_ENGINEX" == "Y" ]]; then
         chmod -R 755 ${BIOENGINEX_DATA_VOLUME} || true
     fi
 
-    # Check JWT_SECRET
-    if [ -z "$JWT_SECRET" ] || [ "$JWT_SECRET" != "" ]; then
-        echo -e "${_RED}Please add JWT_SECRET. Exiting...${_NC}"
+    # JWT_SECRET is compulsory for BioEngineX
+    if [ -z "$JWT_SECRET" ]; then
+        echo -e "${_RED}Please add JWT_SECRET to the env file. Exiting...${_NC}"
         exit 1
     fi
 
@@ -532,6 +549,7 @@ if [[ "$AGREE_ENGINEX" == "y" || "$AGREE_ENGINEX" == "Y" ]]; then
     docker pull bioturing/bioenginex:${BIOENGINEX_VERSION}
     docker run -t -i \
         --env-file /etc/docker/bioturing_ecosystem.env \
+        --network "$DOCKER_NETWORK" \
         -p ${BIOENGINEX_HTTP_PORT}:35576 \
         -p ${BIOENGINEX_RPC_PORT}:35577 \
         -v "$USER_DATA_VOLUME":/home/shared \
@@ -570,6 +588,7 @@ echo -e "${_BLUE}Pulling bioturing ecosystem image${_NC}"
 docker pull bioturing/bioturing-ecosystem12:${BBVERSION}
 docker run -t -i \
     --env-file /etc/docker/bioturing_ecosystem.env \
+    --network "$DOCKER_NETWORK" \
     -p ${HTTP_PORT}:80 \
     -p ${HTTPS_PORT}:443 \
     -v "$APP_DATA_VOLUME":/data/app_data \
