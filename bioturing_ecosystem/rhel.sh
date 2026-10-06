@@ -107,8 +107,8 @@ if [[ "$AGREE_UPDATE" == "y" || "$AGREE_UPDATE" == "Y" ]]; then
     echo -e "${_BLUE}Installing base packages...${_NC}\n"
     sudo yum update -y
 else
-    echo -e "${_GREEN}Skipped base package update & upgrade.${_NC}\n"
-    sudo yum groupinstall 'Development Tools'
+    # "n" must mean NO OS package changes at all.
+    echo -e "${_GREEN}Skipped base package update & upgrade. No packages will be updated or installed here.${_NC}\n"
 fi
 
 #------------
