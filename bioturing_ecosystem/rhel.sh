@@ -107,8 +107,8 @@ if [[ "$AGREE_UPDATE" == "y" || "$AGREE_UPDATE" == "Y" ]]; then
     echo -e "${_BLUE}Installing base packages...${_NC}\n"
     sudo yum update -y
 else
-    echo -e "${_GREEN}Skipped base package update & upgrade.${_NC}\n"
-    sudo yum groupinstall 'Development Tools'
+    # "n" must mean NO OS package changes at all.
+    echo -e "${_GREEN}Skipped base package update & upgrade. No packages will be updated or installed here.${_NC}\n"
 fi
 
 #------------
@@ -337,6 +337,35 @@ else
 fi
 fi 
 
+# Verify required tools (mirrors ubuntu.sh REQUIRED_TOOLS check).
+# Ask before installing anything; if the user says no, skip it.
+REQUIRED_TOOLS=("gcc" "g++" "make")
+MISSING_TOOLS=()
+
+for tool in "${REQUIRED_TOOLS[@]}"; do
+    if ! command -v $tool &> /dev/null; then
+        MISSING_TOOLS+=("$tool")
+    else
+        echo -e "${_GREEN}$tool already installed${_NC}"
+    fi
+done
+
+if [ ${#MISSING_TOOLS[@]} -gt 0 ]; then
+    echo -e "${_YELLOW}Missing build tools: ${MISSING_TOOLS[*]}${_NC}"
+    read -p "Do you want to install them (gcc, g++, make / Development Tools)? [y/n]: " AGREE_TOOLS
+    if [[ "$AGREE_TOOLS" == "y" || "$AGREE_TOOLS" == "Y" ]]; then
+        sudo yum install -y gcc gcc-c++ make
+        sudo yum groupinstall -y "Development Tools"
+    else
+        echo -e "${_YELLOW}Skipped installing build tools.${_NC}"
+        echo -e "${_YELLOW}NOTE: These are only required if you later install the NVIDIA CUDA Toolkit (driver compilation).${_NC}"
+    fi
+fi
+
+# NOTE: BioEngineX containers run as root inside the container, so user/group
+# ownership on the host does not matter. Full permission (777) is applied to
+# the data volume below to guarantee the container can create folders freely.
+
 # Check for Nvidia driver and show detail
 COUNT_DRIVER=`ls /proc/driver/ | grep -i nvidia | wc -l`
 
@@ -426,8 +455,8 @@ fi
                 echo -e "${_BLUE}Reference : https://github.com/NVIDIA/nvidia-docker/issues/1268${_NC}\n"
 
 
-                echo -e "${_BLUE}Using repository URL: $REPO_URL${_NC}\n"
                 REPO_URL="https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-container-toolkit.repo"
+                echo -e "${_BLUE}Using repository URL: $REPO_URL${_NC}\n"
                 # Add the repository
                 if curl -s -L "$REPO_URL" | sudo tee /etc/yum.repos.d/nvidia-container-toolkit.repo; then
                     echo -e "${_GREEN}Repository added successfully.${_NC}\n"
@@ -526,9 +555,14 @@ if [[ "$AGREE_ENGINEX" == "y" || "$AGREE_ENGINEX" == "Y" ]]; then
     BIOENGINEX_DATA_VOLUME="${USER_DATA_VOLUME}/bioenginex"
     if [ ! -d ${BIOENGINEX_DATA_VOLUME} ]; then
         mkdir -p ${BIOENGINEX_DATA_VOLUME}
-        chown -R www-data:www-data ${BIOENGINEX_DATA_VOLUME} || true
-        chmod -R 755 ${BIOENGINEX_DATA_VOLUME} || true
     fi
+
+    # Always enforce full permissions. The BioEngineX container runs as root,
+    # so it only needs to be able to read/write/create folders in this path.
+    # 777 guarantees no permission problems (e.g. beanstalkd writing to
+    # /home/enginex) regardless of how the directory was left by earlier runs.
+    chmod -R 777 ${BIOENGINEX_DATA_VOLUME} || true
+    chmod 777 ${USER_DATA_VOLUME} || true
 
     # JWT_SECRET is compulsory for BioEngineX
     if [ -z "$JWT_SECRET" ]; then
