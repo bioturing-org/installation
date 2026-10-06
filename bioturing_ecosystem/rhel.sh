@@ -337,18 +337,30 @@ else
 fi
 fi 
 
-# Verify required tools (mirrors ubuntu.sh REQUIRED_TOOLS check)
+# Verify required tools (mirrors ubuntu.sh REQUIRED_TOOLS check).
+# Ask before installing anything; if the user says no, skip it.
 REQUIRED_TOOLS=("gcc" "g++" "make")
+MISSING_TOOLS=()
 
 for tool in "${REQUIRED_TOOLS[@]}"; do
     if ! command -v $tool &> /dev/null; then
-        echo -e "${_YELLOW}$tool is not installed. Installing Development Tools...${_NC}"
+        MISSING_TOOLS+=("$tool")
+    else
+        echo -e "${_GREEN}$tool already installed${_NC}"
+    fi
+done
+
+if [ ${#MISSING_TOOLS[@]} -gt 0 ]; then
+    echo -e "${_YELLOW}Missing build tools: ${MISSING_TOOLS[*]}${_NC}"
+    read -p "Do you want to install them (gcc, g++, make / Development Tools)? [y/n]: " AGREE_TOOLS
+    if [[ "$AGREE_TOOLS" == "y" || "$AGREE_TOOLS" == "Y" ]]; then
         sudo yum install -y gcc gcc-c++ make
         sudo yum groupinstall -y "Development Tools"
-        break
+    else
+        echo -e "${_YELLOW}Skipped installing build tools.${_NC}"
+        echo -e "${_YELLOW}NOTE: These are only required if you later install the NVIDIA CUDA Toolkit (driver compilation).${_NC}"
     fi
-    echo -e "${_GREEN}$tool already installed${_NC}"
-done
+fi
 
 # RHEL does not ship a 'www-data' user (Ubuntu default, UID/GID 33).
 # The BioEngineX container is Ubuntu-based and runs its services
