@@ -39,7 +39,7 @@ services:
       - "${BIND_ADDRESS:?set BIND_ADDRESS}:${APP_PORT:?set APP_PORT}:${APP_CONTAINER_PORT:-8080}"
       # optional second published port (e.g. 443 -> 4433 HTTPS direct).
       # Renders as empty entry when APP_PORT_EXTRA is unset -> skipped.
-      - "${BIND_ADDRESS}:${APP_PORT_EXTRA:-}:${APP_CONTAINER_PORT:-8080}"
+      - "${BIND_ADDRESS}:${APP_PORT_EXTRA:-}:${APP_CONTAINER_PORT_EXTRA:-8080}"
       # SSH — publish only if the legacy container did (legacy parity)
       # - "${SSH_BIND_ADDRESS}:${SSH_HOST_PORT}:22"
     networks: [bioturing]
