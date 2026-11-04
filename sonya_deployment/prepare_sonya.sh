@@ -137,7 +137,7 @@ fi
 # CREATED. An EXISTING one is never touched (never deleted, never chowned
 # unless it is a fresh empty sonya dir — data safety first).
 log "=== folder structure check (create missing, never delete) ==="
-for key in STORAGE_DIR DATABASE_DIR GATEWAY_STORAGE_DIR WORKSPACE_DATA_DIR WORKSPACE_HOMES_DIR POSTGRES_DATA_DIR SSL_DIR; do
+for key in STORAGE_DIR DATABASE_DIR GATEWAY_STORAGE_DIR WORKSPACE_DATA_DIR WORKSPACE_HOMES_DIR POSTGRES_DATA_DIR; do
   d="$(get "$key")"
   if [ -z "$d" ]; then
     echo "  [FAIL] $key is empty in .env"
