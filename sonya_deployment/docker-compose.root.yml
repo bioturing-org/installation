@@ -26,6 +26,7 @@ services:
       PERSONAL_MODE: ${PERSONAL_MODE:-false}
       DEBUG_MODE: "${DEBUG_MODE:-false}"
       MANUAL_REGISTER_KERNEL: "${MANUAL_REGISTER_KERNEL:-true}"
+      SSL_VOLUME: ${SSL_VOLUME:-/config/ssl}
     env_file:
       - app-extra.env
     # only needed if the app must reach a host-published service
@@ -44,6 +45,7 @@ services:
       - ${DATABASE_DIR:?set DATABASE_DIR}:/database
       # /home/shared = ecosystem user data dir (legacy parity — REQUIRED)
       - ${STORAGE_DIR:?set STORAGE_DIR}:/home/shared
+      - ${SSL_DIR:?set SSL_DIR}:${SSL_VOLUME:-/config/ssl}
     shm_size: ${APP_SHM_SIZE:-64gb}          # legacy --shm-size
     cpus: ${APP_CPUS:?set APP_CPUS}          # legacy --cpus
     mem_limit: ${APP_MEMORY_LIMIT:?set APP_MEMORY_LIMIT}       # legacy --memory
@@ -138,7 +140,7 @@ networks:
   bioturing:
     driver: bridge
     # optional: explicit subnet if the host ran out of default address pools
-    # (e.g. 10.100.x.0/24 on dgx2) — uncomment and set in .env if needed:
+    # — uncomment and set in .env if the host ran out of default address pools:
     # ipam:
     #   config:
     #     - subnet: ${NETWORK_SUBNET}

@@ -12,7 +12,7 @@
 # Version can be pinned: COMPOSE_VERSION=v2.39.2 bash install_compose.sh
 set -euo pipefail
 
-COMPOSE_VERSION="${COMPOSE_VERSION:-v2.39.2}"          # same as elephant
+COMPOSE_VERSION="${COMPOSE_VERSION:-v2.39.2}"
 TARGET="/usr/local/bin/docker-compose"
 [ "$(id -u)" -eq 0 ] || { echo "ERROR: run with sudo/root"; exit 1; }
 
