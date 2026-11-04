@@ -145,7 +145,7 @@ networks:
   bioturing:
     driver: bridge
     # optional: explicit subnet if the host ran out of default address pools
-    # (e.g. 10.100.x.0/24 on dgx2) — uncomment and set in .env if needed:
+    # — uncomment and set in .env if the host ran out of default address pools:
     # ipam:
     #   config:
     #     - subnet: ${NETWORK_SUBNET}

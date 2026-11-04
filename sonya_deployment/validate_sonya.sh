@@ -19,7 +19,7 @@
 #   - BIOTURING_TOKEN: expiry / domain / even empty NEVER fails the deploy —
 #     warning only. The token is carried from legacy and refreshed by Lens.
 #   - env hygiene: value lines must NOT carry inline '#' comments (the
-#     genentech 503 root cause — docker env_file passes them verbatim).
+#     root cause of app breakage — docker env_file passes them verbatim).
 #   - compose missing -> install_compose.sh is run automatically.
 #
 # Exit 0 = ready for deploy_sonya.sh, exit 1 = [FAIL] items present.
@@ -88,7 +88,7 @@ done
 
 # ------------------------------------------------- 1b) ENV HYGIENE (503 rule)
 hdr "1b. Env hygiene (no inline comments on value lines)"
-# The genentech incident: 'KEY=value # comment' — docker env_file passes the
+# The failure mode: 'KEY=value # comment' — docker env_file passes the
 # '#' text into the container verbatim -> the app's vhost/routing broke -> 503
 # on every request. This check makes that class of bug impossible to miss.
 env_hygiene() { # file

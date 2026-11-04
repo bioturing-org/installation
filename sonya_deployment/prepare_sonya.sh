@@ -8,7 +8,7 @@
 #     deletes or modifies anything that already exists
 #   - generates NEW sonya-stack secrets if missing — NEVER regenerated
 #     after the first deploy
-#   - enforces env hygiene (no inline '#' on value lines — genentech 503 rule)
+#   - enforces env hygiene (no inline '#' on value lines)
 #   - installs docker-compose if missing (install_compose.sh)
 #   - sets permissions 600/root-only on .env / app-extra.env
 #
@@ -44,9 +44,9 @@ else
     echo "WARN: no compose command and no install_compose.sh — continuing, validate will re-check"
 fi
 
-# ------------------------------------------- 0b) env hygiene (genentech rule) --
+# ------------------------------------------- 0b) env hygiene --
 # value lines with inline '#' comments break docker env_file (values are
-# passed verbatim) — the genentech 503 root cause. Strip them automatically.
+# passed verbatim) and breaks the app. Strip them automatically.
 for f in .env app-extra.env; do
     [ -f "$f" ] || continue
     if grep -qE '^[A-Za-z_][A-Za-z0-9_]*=.*#' "$f"; then
@@ -54,7 +54,7 @@ for f in .env app-extra.env; do
         echo "!! inline comments found on value lines in $f:"
         grep -nE '^[A-Za-z_][A-Za-z0-9_]*=.*#' "$f" | sed 's/^/    /'
         echo "   (docker passes these VERBATIM to the container — the '#' text"
-        echo "    becomes part of the value and breaks the app; genentech 503)"
+        echo "    becomes part of the value and breaks the app)"
         read -rp "    Strip them now (comments on their own lines stay)? [Y/n] " ANS
         case "${ANS:-y}" in
             n|N) echo "aborted — fix $f manually (move comments to their own lines)"; exit 1 ;;

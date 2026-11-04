@@ -38,7 +38,7 @@ cd "$DEPLOY_DIR"
 [ -f .env ] || { echo "ERROR: .env missing — run prepare_sonya.sh first"; exit 1; }
 
 # compose command: plugin first, standalone docker-compose fallback (hosts
-# without the plugin, e.g. genentech / elephant); install if missing
+# without the plugin); install if missing
 if docker compose version >/dev/null 2>&1; then
   COMPOSE="docker compose"
 elif command -v docker-compose >/dev/null 2>&1; then
