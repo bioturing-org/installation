@@ -1,0 +1,144 @@
+# Sonya stack — ROOT image mode (bioturing/bioturing-ecosystem12:8.0.11)
+#
+# >>> IMPORTANT (instruction from Lens) <<<
+# For the ROOT image you MUST NOT have:
+#   1) the storage-init service                  -> REMOVED here
+#   2) depends_on: storage-init on the app       -> REMOVED here
+# The root image does not need the chown helper — the app runs as root and
+# can write to the data dirs directly.
+# (In the non-root file docker-compose.nonroot.yml both ARE present.)
+#
+# Settings are in .env / app-extra.env (the templates in this folder, already
+# named as docker compose expects — just edit them).
+
+services:
+  app:
+    image: ${BIOTURING_IMAGE:?set BIOTURING_IMAGE in .env}
+    container_name: ${CONTAINER_NAME:?set CONTAINER_NAME in .env}
+    # NO env_file of .env here: .env holds compose-interpolation vars that the
+    # app entrypoint would try to mkdir and crash. Only the extras carried
+    # over from the legacy container are passed via app-extra.env; together
+    # with the environment block below they reproduce the legacy env 1:1.
+    environment:
+      APPLICATION_DOMAIN: ${APPLICATION_DOMAIN:?set APPLICATION_DOMAIN in .env}
+      BIOTURING_TOKEN: ${BIOTURING_TOKEN:?set BIOTURING_TOKEN in .env}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET}
+      PERSONAL_MODE: ${PERSONAL_MODE:-false}
+      DEBUG_MODE: "${DEBUG_MODE:-false}"
+      MANUAL_REGISTER_KERNEL: "${MANUAL_REGISTER_KERNEL:-true}"
+    env_file:
+      - app-extra.env
+    # only needed if the app must reach a host-published service
+    # (e.g. a shared postgres). Keep commented unless the legacy
+    # container had it or DATABASE_PG_HOST=host.docker.internal.
+    #extra_hosts:
+    #  - "host.docker.internal:host-gateway"
+    ports:
+      # app port — fronted by HAProxy (BIND_ADDRESS normally 127.0.0.1)
+      - "${BIND_ADDRESS:?set BIND_ADDRESS}:${APP_PORT:?set APP_PORT}:8080"
+      # SSH — publish only if the legacy container did (legacy parity)
+      # - "${SSH_BIND_ADDRESS}:${SSH_HOST_PORT}:22"
+    networks: [bioturing]
+    volumes:
+      # /database = ecosystem database dir (legacy parity — REQUIRED)
+      - ${DATABASE_DIR:?set DATABASE_DIR}:/database
+      # /home/shared = ecosystem user data dir (legacy parity — REQUIRED)
+      - ${STORAGE_DIR:?set STORAGE_DIR}:/home/shared
+    shm_size: ${APP_SHM_SIZE:-64gb}          # legacy --shm-size
+    cpus: ${APP_CPUS:?set APP_CPUS}          # legacy --cpus
+    mem_limit: ${APP_MEMORY_LIMIT:?set APP_MEMORY_LIMIT}       # legacy --memory
+    memswap_limit: ${APP_MEMSWAP_LIMIT:?set APP_MEMSWAP_LIMIT} # 2x mem = swap allowed
+    cap_add:
+      - SYS_ADMIN
+    devices:
+      - /dev/fuse:/dev/fuse
+    security_opt:
+      - apparmor:unconfined
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options: {max-size: "100m", max-file: "5"}
+    deploy:
+      resources:
+        reservations:
+          # GPU reservation — all GPUs, standard pattern:
+          #   driver: nvidia, count: all
+          # NO GPU (CPU-only tenant): delete this whole deploy.resources
+          # block from the app service
+          devices:
+            - driver: "${GPU_DRIVER:-nvidia}"
+              capabilities: [gpu]
+              count: all
+    # ROOT MODE: NO depends_on: storage-init — the service does not exist
+    # in this file (root can write without the chown helper).
+
+  # (storage-init intentionally REMOVED for the root image — see header)
+
+  sonya-gateway:
+    image: bioturing/sonya-gateway:a633882
+    user: "0:0"
+    init: true
+    restart: unless-stopped
+    networks: [bioturing]
+    env_file: .env
+    environment:
+      HOME: /root
+      WORKSPACE_JWT_SECRET: ${WORKSPACE_JWT_SECRET:?Set WORKSPACE_JWT_SECRET}
+      SONYA_GATEWAY_SANDBOX__JUPYTER__BASE_URL: http://jupyter-workspace:8080
+      SONYA_GATEWAY_DATABASE__URL: "postgresql://sonya:${SONYA_DB_PASSWORD:?Set SONYA_DB_PASSWORD}@sonya-postgres:5432/sonya"
+      SONYA_GATEWAY_SECURITY__SECRET_KEY: ${SONYA_GATEWAY_SECURITY__SECRET_KEY:?Set encryption key}
+      SONYA_GATEWAY_AUTH__APP_BASE_URL: https://${APPLICATION_DOMAIN:?set APPLICATION_DOMAIN in .env}
+    volumes:
+      - ${GATEWAY_STORAGE_DIR:?Set GATEWAY_STORAGE_DIR}:/app/storage
+      - ${WORKSPACE_HOMES_DIR:?Set WORKSPACE_HOMES_DIR}:/home
+    depends_on:
+      sonya-postgres:
+        condition: service_healthy
+      jupyter-workspace:
+        condition: service_healthy
+
+  jupyter-workspace:
+    image: bioturing/jupyter-workspace:b44eff0
+    container_name: ${JUPYTER_CONTAINER_NAME:?set JUPYTER_CONTAINER_NAME in .env}
+    restart: unless-stopped
+    networks: [bioturing]
+    cpus: "4.0"
+    mem_limit: 8g
+    pids_limit: 4096
+    ulimits:
+      nproc:
+        soft: 256
+        hard: 256
+    environment:
+      WORKSPACE_JWT_SECRET: ${WORKSPACE_JWT_SECRET:?Set WORKSPACE_JWT_SECRET}
+    volumes:
+      - ${WORKSPACE_DATA_DIR:?Set WORKSPACE_DATA_DIR}:/data
+      - ${WORKSPACE_HOMES_DIR:?Set WORKSPACE_HOMES_DIR}:/home
+    stop_grace_period: 30s
+
+  sonya-postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    networks: [bioturing]
+    environment:
+      POSTGRES_USER: sonya
+      POSTGRES_DB: sonya
+      POSTGRES_PASSWORD: ${SONYA_DB_PASSWORD:?Set SONYA_DB_PASSWORD}
+    volumes:
+      - ${POSTGRES_DATA_DIR:?Set POSTGRES_DATA_DIR}:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sonya -d sonya"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+# other services on this network reach the app at http://app:8080
+networks:
+  bioturing:
+    driver: bridge
+    # optional: explicit subnet if the host ran out of default address pools
+    # (e.g. 10.100.x.0/24 on dgx2) — uncomment and set in .env if needed:
+    # ipam:
+    #   config:
+    #     - subnet: ${NETWORK_SUBNET}
