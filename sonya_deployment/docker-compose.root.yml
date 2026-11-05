@@ -80,7 +80,7 @@ services:
   # (storage-init intentionally REMOVED for the root image — see header)
 
   sonya-gateway:
-    image: bioturing/sonya-gateway:a633882
+    image: bioturing/sonya-gateway:e78fe9b
     user: "0:0"
     init: true
     restart: unless-stopped
@@ -103,7 +103,7 @@ services:
         condition: service_healthy
 
   jupyter-workspace:
-    image: bioturing/jupyter-workspace:b44eff0
+    image: bioturing/jupyter-workspace:29ec725
     container_name: ${JUPYTER_CONTAINER_NAME:?set JUPYTER_CONTAINER_NAME in .env}
     restart: unless-stopped
     networks: [bioturing]
