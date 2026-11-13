@@ -196,6 +196,9 @@ if [ "$MODE" = "2" ]; then
 
   # 0) SAFETY BACKUP of /database (copy-only, never deletes anything)
   backup_database || { echo "aborted — no backup, no deploy"; exit 1; }
+  if [ -f "${DEPLOY_DIR}/backup_sonya_pg.sh" ]; then
+    bash "${DEPLOY_DIR}/backup_sonya_pg.sh" || { echo "aborted — no sonya-pg backup, no deploy"; exit 1; }
+  fi
 
   # a) PULL FIRST — while the old container is still running (minimize downtime)
   [ "${SKIP_DOCKER_PULL:-0}" = "1" ] \
@@ -375,6 +378,9 @@ if [ "$MODE" = "7" ]; then
 
   # SAFETY BACKUP of /database first (copy-only, never deletes anything)
   backup_database || { echo "aborted — no backup, no redeploy"; exit 1; }
+  if [ -f "${DEPLOY_DIR}/backup_sonya_pg.sh" ]; then
+    bash "${DEPLOY_DIR}/backup_sonya_pg.sh" || { echo "aborted — no sonya-pg backup, no redeploy"; exit 1; }
+  fi
   ${COMPOSE} down
   ${COMPOSE} up -d
   log "applying GPU stub fix inside fresh container"
