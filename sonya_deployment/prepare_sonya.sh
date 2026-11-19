@@ -92,7 +92,7 @@ echo "  1) non-root  (bioturing/bioturing-ecosystem12:8.0.10)"
 echo "     - app runs as www-data (uid 33)"
 echo "     - uses docker-compose.nonroot.yml (WITH storage-init chown helper)"
 echo "     - this is the standard/default mode"
-echo "  2) root      (bioturing/bioturing-ecosystem12:8.0.11)"
+echo "  2) root      (bioturing/bioturing-ecosystem12:8.0.12)"
 echo "     - app runs as root"
 echo "     - uses docker-compose.root.yml (NO storage-init, no depends_on"
 echo "       storage-init — per Lens's instruction)"
@@ -121,7 +121,7 @@ if [ "$MODE_CHOOSE" = "nonroot" ]; then
   setenv BIOTURING_IMAGE bioturing/bioturing-ecosystem12:8.0.10
 else
   setenv IMAGE_MODE root
-  setenv BIOTURING_IMAGE bioturing/bioturing-ecosystem12:8.0.11
+  setenv BIOTURING_IMAGE bioturing/bioturing-ecosystem12:8.0.12
 fi
 # link the matching compose file as the active one (never overwrites a
 # tenant-tailored regular docker-compose.yml — only the pair symlink)

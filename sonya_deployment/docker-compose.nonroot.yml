@@ -75,7 +75,7 @@ services:
 
   # NON-ROOT MODE ONLY — one-shot: chowns the app data dirs to 33:33
   # (www-data) because the app cannot write to root-owned dirs.
-  # If you use the ROOT image (8.0.11) this whole service AND the
+  # If you use the ROOT image (8.0.12) this whole service AND the
   # depends_on above must be REMOVED (see docker-compose.root.yml).
   storage-init:
     image: ${BIOTURING_IMAGE}

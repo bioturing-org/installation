@@ -119,7 +119,7 @@ hdr "2. Image mode (root / non-root)"
 MODE="$(get IMAGE_MODE)"
 case "$MODE" in
     nonroot) ok "IMAGE_MODE=nonroot (8.0.10, www-data, storage-init needed)";;
-    root)    ok "IMAGE_MODE=root (8.0.11, runs as root, NO storage-init)";;
+    root)    ok "IMAGE_MODE=root (8.0.12, runs as root, NO storage-init)";;
     *)       fail "IMAGE_MODE='${MODE}' — run prepare_sonya.sh first (it asks root/non-root)";;
 esac
 IMG="$(get BIOTURING_IMAGE)"
@@ -131,9 +131,9 @@ if [ "$MODE" = "nonroot" ]; then
         && ok "active compose HAS storage-init (required for non-root)" \
         || warn "active compose is MISSING storage-init — check docker-compose.yml"
 else
-    echo "$IMG" | grep -q "8.0.11" \
+    echo "$IMG" | grep -q "8.0.12" \
         && ok "BIOTURING_IMAGE=${IMG} matches root mode" \
-        || fail "BIOTURING_IMAGE=${IMG} does not match root mode (expected 8.0.11)"
+        || fail "BIOTURING_IMAGE=${IMG} does not match root mode (expected 8.0.12)"
     grep -q "^  storage-init:" docker-compose.yml 2>/dev/null \
         && fail "active compose STILL HAS storage-init — for the ROOT image it must be REMOVED" \
         || ok "active compose has NO storage-init (correct for root image)"
