@@ -1,4 +1,4 @@
-# Sonya stack — ROOT image mode (bioturing/bioturing-ecosystem12:8.0.11)
+# Sonya stack — ROOT image mode (bioturing/bioturing-ecosystem12:8.0.13)
 #
 # >>> IMPORTANT (instruction from Lens) <<<
 # For the ROOT image you MUST NOT have:
@@ -7,6 +7,11 @@
 # The root image does not need the chown helper — the app runs as root and
 # can write to the data dirs directly.
 # (In the non-root file docker-compose.nonroot.yml both ARE present.)
+#
+# >>> 8.0.13: sonya runs INSIDE the ecosystem app image <<<
+# The separate sonya-gateway service is GONE — its env vars + mounts moved
+# into the app service below, at new in-container paths
+# (/srv/workspace-homes, /var/lib/sonya-gateway).
 #
 # Settings are in .env / app-extra.env (the templates in this folder, already
 # named as docker compose expects — just edit them).
@@ -27,6 +32,15 @@ services:
       DEBUG_MODE: "${DEBUG_MODE:-false}"
       MANUAL_REGISTER_KERNEL: "${MANUAL_REGISTER_KERNEL:-true}"
       SSL_VOLUME: ${SSL_VOLUME:-/config/ssl}
+      # ---- sonya (formerly the separate sonya-gateway service; now runs
+      # ---- inside the ecosystem app image) --------------------------------
+      WORKSPACE_JWT_SECRET: ${WORKSPACE_JWT_SECRET:?Set WORKSPACE_JWT_SECRET in .env}
+      SONYA_GATEWAY_SANDBOX__JUPYTER__BASE_URL: http://jupyter-workspace:8080
+      SONYA_GATEWAY_DATABASE__URL: "postgresql://sonya:${SONYA_DB_PASSWORD:?Set SONYA_DB_PASSWORD}@sonya-postgres:5432/sonya"
+      SONYA_GATEWAY_SECURITY__SECRET_KEY: ${SONYA_GATEWAY_SECURITY__SECRET_KEY:?Set encryption key}
+      SONYA_GATEWAY_AUTH__APP_BASE_URL: https://${APPLICATION_DOMAIN:?set APPLICATION_DOMAIN in .env}
+      SONYA_GATEWAY_SANDBOX__MOUNTS__HOME_DIR: ${SONYA_GATEWAY_SANDBOX__MOUNTS__HOME_DIR:-/srv/workspace-homes}
+      SONYA_GATEWAY_DATA_DIR: ${SONYA_GATEWAY_DATA_DIR:-/var/lib/sonya-gateway}
     env_file:
       - app-extra.env
     # only needed if the app must reach a host-published service
@@ -49,10 +63,15 @@ services:
       # /home/shared = ecosystem user data dir (legacy parity — REQUIRED)
       - ${STORAGE_DIR:?set STORAGE_DIR}:/home/shared
       - ${SSL_VOLUME:-/config/ssl}:${SSL_VOLUME:-/config/ssl}
+      # sonya (inside the app since 8.0.13) — workspace homes + gateway data.
+      # Mount targets use the SAME vars as the environment block above, so
+      # env paths and mounts can never drift apart (validated: validate_sonya.sh 2b)
+      - ${WORKSPACE_HOMES_DIR:?Set WORKSPACE_HOMES_DIR}:${SONYA_GATEWAY_SANDBOX__MOUNTS__HOME_DIR:-/srv/workspace-homes}
+      - ${GATEWAY_STORAGE_DIR:?Set GATEWAY_STORAGE_DIR}:${SONYA_GATEWAY_DATA_DIR:-/var/lib/sonya-gateway}
     shm_size: ${APP_SHM_SIZE:-64gb}          # legacy --shm-size
     cpus: ${APP_CPUS:?set APP_CPUS}          # legacy --cpus
     mem_limit: ${APP_MEMORY_LIMIT:?set APP_MEMORY_LIMIT}       # legacy --memory
-    memswap_limit: ${APP_MEMSWAP_LIMIT:?set APP_MEMSWAP_LIMIT} # 2x mem = swap allowed
+    memswap_limit: ${APP_MEMSWAP_LIMIT:-${APP_MEMORY_LIMIT}} # OPTIONAL — unset = no swap (hosts without swap: leave APP_MEMSWAP_LIMIT empty)
     cap_add:
       - SYS_ADMIN
     devices:
@@ -78,32 +97,10 @@ services:
     # in this file (root can write without the chown helper).
 
   # (storage-init intentionally REMOVED for the root image — see header)
-
-  sonya-gateway:
-    image: bioturing/sonya-gateway:e78fe9b
-    user: "0:0"
-    init: true
-    restart: unless-stopped
-    networks: [bioturing]
-    env_file: .env
-    environment:
-      HOME: /root
-      WORKSPACE_JWT_SECRET: ${WORKSPACE_JWT_SECRET:?Set WORKSPACE_JWT_SECRET}
-      SONYA_GATEWAY_SANDBOX__JUPYTER__BASE_URL: http://jupyter-workspace:8080
-      SONYA_GATEWAY_DATABASE__URL: "postgresql://sonya:${SONYA_DB_PASSWORD:?Set SONYA_DB_PASSWORD}@sonya-postgres:5432/sonya"
-      SONYA_GATEWAY_SECURITY__SECRET_KEY: ${SONYA_GATEWAY_SECURITY__SECRET_KEY:?Set encryption key}
-      SONYA_GATEWAY_AUTH__APP_BASE_URL: https://${APPLICATION_DOMAIN:?set APPLICATION_DOMAIN in .env}
-    volumes:
-      - ${GATEWAY_STORAGE_DIR:?Set GATEWAY_STORAGE_DIR}:/app/storage
-      - ${WORKSPACE_HOMES_DIR:?Set WORKSPACE_HOMES_DIR}:/home
-    depends_on:
-      sonya-postgres:
-        condition: service_healthy
-      jupyter-workspace:
-        condition: service_healthy
+  # (sonya-gateway intentionally REMOVED — sonya runs inside the app image)
 
   jupyter-workspace:
-    image: bioturing/jupyter-workspace:29ec725
+    image: bioturing/jupyter-workspace:b44eff0
     container_name: ${JUPYTER_CONTAINER_NAME:?set JUPYTER_CONTAINER_NAME in .env}
     restart: unless-stopped
     networks: [bioturing]

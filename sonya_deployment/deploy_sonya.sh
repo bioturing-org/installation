@@ -8,22 +8,28 @@
 #   2) real      - cutover deployment (stops ONLY the old main container)
 #   3) stop      - stop the Sonya stack (nothing removed)
 #   4) start     - start the Sonya stack
-#   5) restart   - restart the Sonya stack
+#   5) restart   - restart the Sonya stack (ALL containers; one-by-one: 8)
 #   6) down      - docker-compose down: stop + REMOVE all stack containers
 #                  (data on the NAS persists; nothing is deleted from disk)
-#   7) redeploy  - COMPLETE remove (compose down) + fresh start
+#   7) redeploy  - COMPLETE remove (compose down) + fresh start (backup first)
+#   8) svc       - manage ONE service: status / logs / restart / redeploy
+#   9) backup    - run BOTH backups now (ecosystem DB dir + sonya postgres)
+#  10) exit
 #
 # IMPORTANT (ops decisions from the production roll-out):
-#   - 'real' (2) NEVER stops/removes sonya-postgres, sonya-gateway or
-#     jupyter-workspace. It only stops+removes the OLD main standalone
-#     container (CONTAINER_NAME — compose reuses that name).
-#   - 'redeploy' (6) is the ONLY action that removes the whole stack
+#   - 'real' (2) NEVER stops/removes sonya-postgres or jupyter-workspace.
+#     It only stops+removes the OLD main standalone container
+#     (CONTAINER_NAME — compose reuses that name). sonya itself runs
+#     INSIDE the app image since 8.0.13 (no separate sonya-gateway service).
+#   - 'real' (2), 'redeploy' (7) and svc-redeploy (8) take a SAFETY BACKUP
+#     first (ecosystem DB dir + sonya postgres dump).
+#   - 'down' (6) is the ONLY action that removes the whole stack
 #     (incl. sonya-postgres). Data on the NAS persists.
 #
 # Optional env overrides (not parameters):
 #   SKIP_DOCKER_PULL=1   images pre-pulled, skip pull
 #   CONFIRM=YES          skip the interactive YES confirmation
-#   MODE=1..7            pre-select the menu choice
+#   MODE=1..9            pre-select the menu choice (anything else = exit)
 
 set -euo pipefail
 
@@ -113,22 +119,24 @@ echo "  tenant: ${FQDN}"
 echo "  image mode: ${IMAGE_MODE:-UNSET} (${BIOTURING_IMAGE:-?})"
 echo "===================================================================="
 echo
-echo "  1) dry-run    - validate + render compose + show plan (changes NOTHING)"
-echo "  2) real       - cutover deploy (stops ONLY the old main container"
-echo "                  ${CONTAINER_NAME}; sonya containers keep running)"
-echo "  3) stop       - stop the Sonya stack (no removal)"
-echo "  4) start      - start the Sonya stack"
-echo "  5) restart    - restart the Sonya stack"
-echo "  6) down      - stop + REMOVE all stack containers (data persists)"
-echo "  7) redeploy  - COMPLETE remove (incl. postgres) + fresh start"
-echo "  8) exit"
+echo "  1) dry-run     - validate + render compose + show plan (changes NOTHING)"
+echo "  2) real        - cutover deploy: backup, stop ONLY the old main container"
+echo "                   ${CONTAINER_NAME}, start the new stack"
+echo "  3) stop        - stop the whole Sonya stack (no removal)"
+echo "  4) start       - start the whole Sonya stack"
+echo "  5) restart     - restart ALL stack containers (one-by-one -> option 8)"
+echo "  6) down        - stop + REMOVE all stack containers (data persists)"
+echo "  7) redeploy    - full removal (backup first) + fresh start of the stack"
+echo "  8) svc (one)   - manage ONE service: status / logs / restart / redeploy"
+echo "  9) backup      - run BOTH backups now (ecosystem DB dir + sonya postgres)"
+echo " 10) exit"
 echo
 MODE="${MODE:-}"
 if [ -z "$MODE" ]; then
-  read -rp "  Choose 1-8: " MODE
+  read -rp "  Choose 1-10: " MODE
 fi
 case "$MODE" in
-  1|2|3|4|5|6|7) ;;
+  1|2|3|4|5|6|7|8|9) ;;
   *) echo "aborted — nothing was changed"; exit 0;;
 esac
 
@@ -155,8 +163,9 @@ if [ "$MODE" = "1" ]; then
   echo "                (root image: storage-init NOT in the stack — correct)"
   echo "  old instance: container ${CONTAINER_NAME} (if still running)"
   echo "                -> mode 2 (real) stops+removes ONLY this container;"
-  echo "                   sonya-postgres / sonya-gateway / jupyter-workspace"
-  echo "                   are NEVER stopped or removed by mode 2"
+  echo "                   sonya-postgres / jupyter-workspace are NEVER"
+  echo "                   stopped or removed by mode 2 (sonya runs INSIDE"
+  echo "                   the app image since 8.0.13)"
   echo "  new stack   : ${COMPOSE} up -d, app on ${APP_PORT}"
   echo "  after real  : switch the host's HAProxy backend to the new port"
   echo "                and reload haproxy (manual — with a cfg backup first)"
@@ -208,7 +217,7 @@ if [ "$MODE" = "2" ]; then
   # b) pre-checks BEFORE touching the old container
   PORT_HOG="$(docker ps --format '{{.ID}} {{.Names}} {{.Ports}}' \
               | grep -E ":${APP_PORT}->" \
-              | grep -vE "sonya-postgres|sonya-gateway|jupyter-workspace" \
+              | grep -vE "sonya-postgres|jupyter-workspace" \
               | awk '{print $1}' || true)"
   if [ -n "$PORT_HOG" ]; then
     log "WARNING: container(s) ${PORT_HOG} hold port ${APP_PORT} — will remove them below"
@@ -279,17 +288,17 @@ if [ "$MODE" = "2" ]; then
     sleep 20
     BAD2="$(${COMPOSE} ps --all --format '{{.Name}}: {{.State}} {{.Health}}' 2>/dev/null \
             | grep -E 'restarting|unhealthy|dead|paused' || true)"
-    GWERR="$(${COMPOSE} logs --since 1m sonya-gateway 2>&1 | grep -E 'Error:|FATAL' | head -3 || true)"
+    GWERR="$(${COMPOSE} logs --since 1m app 2>&1 | grep -Ei 'sonya.?gateway.*(error|fatal)' | head -3 || true)"
     if [ -n "$BAD2" ] || [ -n "$GWERR" ]; then
       log "WARNING: late failure detected (20s re-check) - stack is NOT healthy:"
       [ -n "$BAD2" ] && echo "$BAD2" | sed 's/^/    /'
       [ -n "$GWERR" ] && echo "$GWERR" | sed 's/^/    /'
     else
-      log "confirmed stable after 20s re-check (no restarts, no gateway errors)"
+      log "confirmed stable after 20s re-check (no restarts, no sonya errors)"
     fi
   fi
   echo "--- last 10 log lines per container ---"
-  for svc in app sonya-gateway sonya-postgres jupyter-workspace; do
+  for svc in app sonya-postgres jupyter-workspace; do
     echo "===== $svc ====="
     ${COMPOSE} logs --tail 10 "$svc" 2>&1 | sed 's/^/  /'
     echo
@@ -363,6 +372,11 @@ if [ "$MODE" = "6" ]; then
   log "=== down (by ${SUDO_USER:-root}) ==="
   ${COMPOSE} down
   log "stack stopped and removed (data persists)"
+  echo
+  echo "NOTE: the standalone BioEngineX GPU compute container (if deployed)"
+  echo "      shares this stack's docker network. 'down' may have detached it"
+  echo "      — after the next start/deploy, re-attach it with:"
+  echo "        bash ${DEPLOY_DIR}/deploy_bioenginex.sh   (menu 5)"
   exit 0
 fi
 
@@ -389,3 +403,92 @@ if [ "$MODE" = "7" ]; then
   log "=== redeploy finished ==="
   exit 0
 fi
+
+# ============================================================ 8) SVC (one) ======
+if [ "$MODE" = "8" ]; then
+  echo
+  echo "===================================================================="
+  echo " MANAGE ONE SERVICE — pick a service, then an action"
+  echo "===================================================================="
+  # live service list from the active compose. storage-init (nonroot) is a
+  # one-shot helper — not manageable. sonya runs inside the app since 8.0.13.
+  SERVICES="$(${COMPOSE} config --services 2>/dev/null | grep -v '^storage-init$' | sort | tr '\n' ' ')"
+  [ -n "$SERVICES" ] || { echo "ERROR: could not read services from compose"; exit 1; }
+  echo "  services: ${SERVICES}"
+  echo
+  read -rp "  service name: " SVC
+  if ! echo " $SERVICES " | grep -qw "$SVC"; then
+    echo "unknown service '${SVC}' — aborted, nothing was changed"
+    exit 0
+  fi
+  cat <<EOM
+
+  actions for '${SVC}':
+    s) status   - show the service status
+    l) logs     - last 50 log lines (option to follow live)
+    r) restart  - restart this ONE service (data persists)
+    d) redeploy - backup first, then force-recreate this ONE service
+    b) back     - abort, nothing was changed
+EOM
+  read -rp "  action [s/l/r/d/b]: " ACT
+  case "$ACT" in
+    s)
+      ${COMPOSE} ps "$SVC"
+      ;;
+    l)
+      ${COMPOSE} logs --tail 50 "$SVC"
+      read -rp "  follow live logs now? [y/N] " F
+      case "$F" in y|Y|yes|YES) ${COMPOSE} logs -f --tail 10 "$SVC";; esac
+      ;;
+    r)
+      confirm "restart service '${SVC}'?" || exit 0
+      log "=== restart single service ${SVC} (by ${SUDO_USER:-root}) ==="
+      ${COMPOSE} restart "$SVC"
+      ${COMPOSE} ps "$SVC"
+      log "service ${SVC} restarted"
+      ;;
+    d)
+      confirm "redeploy service '${SVC}' (force-recreate)? A backup is taken first." || exit 0
+      log "=== redeploy single service ${SVC} (by ${SUDO_USER:-root}) ==="
+      # SAFETY BACKUP first (same rule as modes 2 and 7)
+      backup_database || { echo "aborted — no backup, no redeploy"; exit 1; }
+      if [ -f "${DEPLOY_DIR}/backup_sonya_pg.sh" ]; then
+        if ${COMPOSE} ps --status running 2>/dev/null | grep -q sonya-postgres; then
+          bash "${DEPLOY_DIR}/backup_sonya_pg.sh" || { echo "aborted — no sonya-pg backup, no redeploy"; exit 1; }
+        else
+          log "sonya-postgres is not running — skipping sonya-pg backup"
+        fi
+      fi
+      ${COMPOSE} up -d --force-recreate "$SVC"
+      ${COMPOSE} ps "$SVC"
+      log "service ${SVC} redeployed"
+      ;;
+    *)
+      echo "aborted — nothing was changed"
+      ;;
+  esac
+  exit 0
+fi
+
+# ============================================================ 9) BACKUP ========
+if [ "$MODE" = "9" ]; then
+  echo
+  echo "===================================================================="
+  echo " BACKUP — run BOTH backups now (no deploy, nothing restarted)"
+  echo "   1) ecosystem database dir (DATABASE_DIR -> database_backups/)"
+  echo "   2) sonya postgres          (pg_dumpall   -> postgres_backups/)"
+  echo "===================================================================="
+  confirm "Run both backups now?" || exit 0
+  log "=== manual backup started (by ${SUDO_USER:-root}) ==="
+  backup_database || { echo "aborted — ecosystem DB backup failed"; exit 1; }
+  if [ -f "${DEPLOY_DIR}/backup_sonya_pg.sh" ]; then
+    bash "${DEPLOY_DIR}/backup_sonya_pg.sh" || { echo "aborted — sonya-pg backup failed"; exit 1; }
+  else
+    log "backup_sonya_pg.sh not found — sonya-pg backup skipped"
+  fi
+  log "=== manual backup finished ==="
+  exit 0
+fi
+
+echo "aborted — nothing was changed"
+exit 0

@@ -119,7 +119,7 @@ hdr "2. Image mode (root / non-root)"
 MODE="$(get IMAGE_MODE)"
 case "$MODE" in
     nonroot) ok "IMAGE_MODE=nonroot (8.0.10, www-data, storage-init needed)";;
-    root)    ok "IMAGE_MODE=root (8.0.11, runs as root, NO storage-init)";;
+    root)    ok "IMAGE_MODE=root (8.0.13, runs as root, NO storage-init)";;
     *)       fail "IMAGE_MODE='${MODE}' — run prepare_sonya.sh first (it asks root/non-root)";;
 esac
 IMG="$(get BIOTURING_IMAGE)"
@@ -131,9 +131,9 @@ if [ "$MODE" = "nonroot" ]; then
         && ok "active compose HAS storage-init (required for non-root)" \
         || warn "active compose is MISSING storage-init — check docker-compose.yml"
 else
-    echo "$IMG" | grep -q "8.0.11" \
+    echo "$IMG" | grep -q "8.0.13" \
         && ok "BIOTURING_IMAGE=${IMG} matches root mode" \
-        || fail "BIOTURING_IMAGE=${IMG} does not match root mode (expected 8.0.11)"
+        || fail "BIOTURING_IMAGE=${IMG} does not match root mode (expected 8.0.13)"
     grep -q "^  storage-init:" docker-compose.yml 2>/dev/null \
         && fail "active compose STILL HAS storage-init — for the ROOT image it must be REMOVED" \
         || ok "active compose has NO storage-init (correct for root image)"
@@ -143,6 +143,43 @@ if [ -L docker-compose.yml ]; then
     echo "$tgt" | grep -q "${MODE}" \
         && ok "docker-compose.yml -> ${tgt} (matches mode)" \
         || fail "docker-compose.yml -> ${tgt} does NOT match mode '${MODE}' — re-run prepare"
+fi
+
+# ------------------- 2b) sonya runs INSIDE the app (since 8.0.13) ----------
+hdr "2b. Sonya gateway inside the app (compose structure)"
+# Since 8.0.13 the sonya gateway runs INSIDE the ecosystem app image: the
+# separate sonya-gateway service is GONE and its env vars + mounts moved
+# into the app service at in-container paths taken from .env
+# (SONYA_GATEWAY_SANDBOX__MOUNTS__HOME_DIR / SONYA_GATEWAY_DATA_DIR) —
+# the same vars drive the environment block AND the mount targets, so
+# they can never drift apart.
+if [ ! -e docker-compose.yml ]; then
+    fail "docker-compose.yml missing — run prepare_sonya.sh first (it creates the symlink)"
+else
+    if grep -q '^  sonya-gateway:' docker-compose.yml 2>/dev/null; then
+        fail "active compose STILL HAS the sonya-gateway service — sonya now runs inside the app image (remove the service)"
+    else
+        ok "active compose has NO sonya-gateway service (sonya runs inside the app)"
+    fi
+    for pat in \
+        'SONYA_GATEWAY_SANDBOX__MOUNTS__HOME_DIR: ${SONYA_GATEWAY_SANDBOX__MOUNTS__HOME_DIR:-' \
+        'SONYA_GATEWAY_DATA_DIR: ${SONYA_GATEWAY_DATA_DIR:-' \
+        '- ${WORKSPACE_HOMES_DIR:?Set WORKSPACE_HOMES_DIR}:${SONYA_GATEWAY_SANDBOX__MOUNTS__HOME_DIR:-' \
+        '- ${GATEWAY_STORAGE_DIR:?Set GATEWAY_STORAGE_DIR}:${SONYA_GATEWAY_DATA_DIR:-'; do
+        if grep -qF -- "$pat" docker-compose.yml 2>/dev/null; then
+            ok "app service: ${pat}..."
+        else
+            fail "app service MISSING: ${pat}... — env paths and mount targets must use the same .env vars"
+        fi
+    done
+    for k in SONYA_GATEWAY_SANDBOX__MOUNTS__HOME_DIR SONYA_GATEWAY_DATA_DIR; do
+        v="$(get "$k")"
+        case "$v" in
+            /*) ok "$k=${v} (from .env — absolute in-container path)";;
+            "") warn "$k unset in .env — compose falls back to the default path";;
+            *)  fail "$k='${v}' — must be an absolute in-container path (leading /)";;
+        esac
+    done
 fi
 
 # ------------------------------------------------------ 3) .env completeness --
@@ -156,6 +193,16 @@ for key in $REQUIRED_KEYS; do
     if [ -z "$v" ]; then fail "$key is empty/unset in .env"; ENV_MISSING=1; fi
 done
 [ "$ENV_MISSING" = "0" ] && ok "all required .env keys are filled"
+
+# APP_MEMSWAP_LIMIT is OPTIONAL — not every host has swap. Unset/empty ->
+# compose defaults memswap to APP_MEMORY_LIMIT (= no swap). Only hosts WITH
+# swap should set it (typically 2x APP_MEMORY_LIMIT).
+MSW="$(get APP_MEMSWAP_LIMIT)"
+if [ -n "$MSW" ]; then
+    ok "APP_MEMSWAP_LIMIT=${MSW} (optional — swap allowed)"
+else
+    ok "APP_MEMSWAP_LIMIT unset — OK (optional; compose defaults it to APP_MEMORY_LIMIT = no swap)"
+fi
 
 # NO external business DB anywhere — DATABASE_PG_* are NOT validated (operator rule).
 ok "no external business DB by design — DATABASE_PG_* not checked"
@@ -172,12 +219,19 @@ secret_value_ok() {
     return 0
 }
 for k in SONYA_DB_PASSWORD SONYA_GATEWAY_SECURITY__SECRET_KEY WORKSPACE_JWT_SECRET; do
+    # NOTE: --fix only generates a secret when it is MISSING/placeholder.
+    # SONYA_GATEWAY_SECURITY__SECRET_KEY is NEVER regenerated once set —
+    # it encrypts the tenants' stored LLM API keys; a new value would
+    # orphan them (users would lose their API keys).
+    # GENERATED VALUES ARE ALPHANUMERIC ONLY (openssl rand -hex):
+    # SONYA_DB_PASSWORD is embedded verbatim in the postgres URI — '+', '/',
+    # '=', ':', '@' etc. would break URI parsing (see charset check below).
     if secret_value_ok "$k"; then
         v="$(get "$k")"
         if [ "${#v}" -ge 16 ]; then ok "$k set (len ${#v})"
         else fail "$k too short (${#v} chars)"; fi
     elif [ "$FIX" = "1" ]; then
-        NEW="$(openssl rand -base64 24 | tr -d '\n')"
+        NEW="$(openssl rand -hex 24)"
         if grep -q "^${k}=" .env 2>/dev/null; then
             sed -i.bak "s|^${k}=.*|${k}=${NEW}|" .env && rm -f .env.bak
         else
@@ -188,6 +242,22 @@ for k in SONYA_DB_PASSWORD SONYA_GATEWAY_SECURITY__SECRET_KEY WORKSPACE_JWT_SECR
         fail "$k missing/placeholder — run: bash validate_sonya.sh --fix (or prepare_sonya.sh)"
     fi
 done
+# SONYA_DB_PASSWORD charset — it is embedded VERBATIM in the postgres URI
+# (SONYA_GATEWAY_DATABASE__URL in the compose app service). Only letters and
+# digits are safe: '+', '/', '=', ':', '@', '#' etc. break URI parsing.
+DBP="$(get SONYA_DB_PASSWORD)"
+if [ -n "$DBP" ]; then
+    case "$DBP" in
+        *[!A-Za-z0-9]*)
+            fail "SONYA_DB_PASSWORD must contain ONLY letters and digits (a-z A-Z 0-9) — it is embedded in the postgres URI and '${DBP}' has unsafe characters"
+            echo "         fix (stack NOT yet deployed): delete the SONYA_DB_PASSWORD line"
+            echo "         in .env and re-run with --fix (regenerates a hex password)"
+            echo "         fix (stack ALREADY deployed): change it inside postgres FIRST —"
+            echo "         docker exec -it <sonya-postgres> psql -U sonya -d sonya -c \"ALTER USER sonya PASSWORD '<new-hex-password>';\""
+            echo "         — then put the SAME value in .env (never regenerate blindly:"
+            echo "         the running postgres still knows the old password)" ;;
+    esac
+fi
 JWT="$(get JWT_SECRET)"
 [ -n "$JWT" ] && ok "JWT_SECRET set (carried verbatim from legacy — length not enforced, NEVER generated)" \
               || fail "JWT_SECRET empty (legacy-carried — copy verbatim from the legacy container/env)"
@@ -366,7 +436,10 @@ PY
     if [ -z "$EXP" ]; then
         warn "could not decode BIOTURING_TOKEN expiry (deploy allowed)"
     elif [ "$EXP" -lt "$(date +%s)" ]; then
-        warn "BIOTURING_TOKEN EXPIRED ($(fmt_exp "$EXP")) — deploy ALLOWED; ask Lens for a fresh token"
+        # EXPIRED never blocks the deploy — but print it in RED so it
+        # cannot be missed (Lens refreshes the token separately).
+        printf '  \033[1;31m[WARN] BIOTURING_TOKEN EXPIRED (%s) — deploy ALLOWED; ask Lens for a fresh token\033[0m\n' "$(fmt_exp "$EXP")"
+        WARNS=$((WARNS+1))
     else
         ok "BIOTURING_TOKEN valid until $(fmt_exp "$EXP")"
     fi
