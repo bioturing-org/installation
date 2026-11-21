@@ -34,7 +34,7 @@ services:
       SSL_VOLUME: ${SSL_VOLUME:-/config/ssl}
       # ---- sonya (formerly the separate sonya-gateway service; now runs
       # ---- inside the ecosystem app image) --------------------------------
-      WORKSPACE_JWT_SECRET: ${WORKSPACE_JWT_SECRET:?Set WORKSPACE_JWT_SECRET}
+      WORKSPACE_JWT_SECRET: ${WORKSPACE_JWT_SECRET:?Set WORKSPACE_JWT_SECRET in .env}
       SONYA_GATEWAY_SANDBOX__JUPYTER__BASE_URL: http://jupyter-workspace:8080
       SONYA_GATEWAY_DATABASE__URL: "postgresql://sonya:${SONYA_DB_PASSWORD:?Set SONYA_DB_PASSWORD}@sonya-postgres:5432/sonya"
       SONYA_GATEWAY_SECURITY__SECRET_KEY: ${SONYA_GATEWAY_SECURITY__SECRET_KEY:?Set encryption key}
