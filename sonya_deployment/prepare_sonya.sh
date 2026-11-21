@@ -92,7 +92,7 @@ echo "  1) non-root  (bioturing/bioturing-ecosystem12:8.0.10)"
 echo "     - app runs as www-data (uid 33)"
 echo "     - uses docker-compose.nonroot.yml (WITH storage-init chown helper)"
 echo "     - this is the standard/default mode"
-echo "  2) root      (bioturing/bioturing-ecosystem12:8.0.12)"
+echo "  2) root      (bioturing/bioturing-ecosystem12:8.0.13)"
 echo "     - app runs as root"
 echo "     - uses docker-compose.root.yml (NO storage-init, no depends_on"
 echo "       storage-init — per Lens's instruction)"
@@ -121,7 +121,7 @@ if [ "$MODE_CHOOSE" = "nonroot" ]; then
   setenv BIOTURING_IMAGE bioturing/bioturing-ecosystem12:8.0.10
 else
   setenv IMAGE_MODE root
-  setenv BIOTURING_IMAGE bioturing/bioturing-ecosystem12:8.0.12
+  setenv BIOTURING_IMAGE bioturing/bioturing-ecosystem12:8.0.13
 fi
 # link the matching compose file as the active one (never overwrites a
 # tenant-tailored regular docker-compose.yml — only the pair symlink)
@@ -150,7 +150,7 @@ for key in STORAGE_DIR DATABASE_DIR GATEWAY_STORAGE_DIR WORKSPACE_DATA_DIR WORKS
   fi
 done
 # sonya-side ownership (learned from the live roll-out):
-#   gateway / workspace dirs -> 0:0 (sonya-gateway + jupyter volume-guard)
+#   gateway / workspace dirs -> 0:0 (sonya-in-app + jupyter volume-guard)
 #   postgres dir -> leave as created (postgres chowns to uid 70 itself)
 #   NEVER chown an initialized postgres data dir
 PGDIR="$(get POSTGRES_DATA_DIR)"
@@ -164,9 +164,12 @@ fi
 # sonya-stack secrets: generated ONCE if missing, NEVER regenerated after
 #   the first deploy (SONYA_GATEWAY_SECURITY__SECRET_KEY encrypts users'
 #   LLM API keys — regenerating loses them all).
+# GENERATED VALUES ARE ALPHANUMERIC ONLY (openssl rand -hex): SONYA_DB_PASSWORD
+#   is embedded verbatim in the postgres URI — '+', '/', '=', ':', '@' etc.
+#   would break URI parsing. Letters and digits only.
 # Legacy-carried secrets (JWT_SECRET, BIOTURING_TOKEN, ...): NEVER generated
 #   here — they must be carried verbatim from the legacy container/env.
-gen() { openssl rand -base64 24 | tr -d '\n'; }
+gen() { openssl rand -hex 24; }   # 48 chars, [0-9a-f] ONLY — URI-safe
 
 secret_value_ok() { # KEY — exits 0 if the value is a real (non-placeholder) secret
   local v

@@ -23,11 +23,16 @@ sudo bash deploy_sonya.sh     # menu 1 = dry-run first, then 2
 ## deploy menu
 
 ```
-1) dry-run   2) real   3) stop   4) start   5) restart
-6) down      7) redeploy         8) exit
+ 1) dry-run    2) real    3) stop    4) start    5) restart (all)
+ 6) down       7) redeploy (all)     8) svc (one)  9) backup   10) exit
 ```
 
+- `8) svc (one)` — manage a single service (app / jupyter-workspace /
+  sonya-postgres): status, logs, restart, redeploy (redeploy backs up first).
+- `9) backup` — run both backups now (ecosystem DB dir + sonya postgres).
+
 Non-interactive: `MODE=2 FORCE=YES CONFIRM=YES bash deploy_sonya.sh`
+(`MODE=1..9`; anything else exits. `SKIP_DOCKER_PULL=1` skips the image pull.)
 
 ## Ports
 
@@ -37,9 +42,9 @@ Non-interactive: `MODE=2 FORCE=YES CONFIRM=YES bash deploy_sonya.sh`
 In-container: 8080 = plain HTTP (publish this), 4433 = HTTPS.
 Health check: `GET /btstatus` returns 200 without auth.
 
-`/sonya-gateway/*` is routed by the app image's internal haproxy to
-`sonya-gateway:18020` over the shared docker network — no host proxy or
-published ports needed.
+`/sonya-gateway/*` is handled INSIDE the app image (since 8.0.13 the sonya
+gateway runs in the app container — there is no separate sonya-gateway
+service anymore). No host proxy or published ports needed.
 
 ## BioEngineX (separate compute service)
 
@@ -86,9 +91,20 @@ The network is recreated and BioEngineX is silently dropped from it — run
 ## Policies
 
 - No external business DB (`DATABASE_PG_*` not shipped, not validated)
-- BIOTURING_TOKEN expiry / empty = warning only, never blocks deploy
+- BIOTURING_TOKEN expiry / empty = warning only (RED), never blocks deploy
 - Dirs: created if missing, never deleted
 - JWT_SECRET / BIOTURING_TOKEN: carried from legacy, never changed
 - SONYA_DB_PASSWORD / SONYA_GATEWAY_SECURITY__SECRET_KEY / WORKSPACE_JWT_SECRET:
-  generated once by prepare, never regenerated
-- root image = 8.0.12, nonroot = 8.0.10 — prepare asks and links the compose
+  generated once by prepare, never regenerated (SONYA_GATEWAY_SECURITY__SECRET_KEY
+  encrypts users' stored LLM API keys — a new value would orphan them)
+- generated secrets are ALPHANUMERIC ONLY (`openssl rand -hex 24`) —
+  SONYA_DB_PASSWORD is embedded verbatim in the postgres URI, so '+', '/',
+  '=', ':', '@' etc. would break URI parsing (validate_sonya.sh FAILS on them)
+- root image = 8.0.13, nonroot = 8.0.10 — prepare asks and links the compose
+- since 8.0.13 the sonya gateway runs INSIDE the app image (env vars + mounts
+  moved to the app service at /srv/workspace-homes and /var/lib/sonya-gateway;
+  the separate sonya-gateway service is GONE from both compose files)
+- APP_MEMSWAP_LIMIT is OPTIONAL — leave it unset/empty on hosts without swap
+  (compose then defaults memswap to APP_MEMORY_LIMIT = no swap)
+- every real deploy / redeploy (modes 2, 7, and 8-svc-redeploy) takes BOTH
+  backups first (ecosystem DB dir + sonya postgres); mode 9 runs them standalone
