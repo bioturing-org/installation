@@ -20,6 +20,8 @@ services:
       DEBUG_MODE: "${DEBUG_MODE:-false}"
       MANUAL_REGISTER_KERNEL: "${MANUAL_REGISTER_KERNEL:-true}"
       SSL_VOLUME: ${SSL_VOLUME:-/config/ssl}
+      NODE_TLS_REJECT_UNAUTHORIZED: ${NODE_TLS_REJECT_UNAUTHORIZED:-}
+      NODE_USE_SYSTEM_CA: ${NODE_USE_SYSTEM_CA:-1}
       # ---- sonya (formerly the separate sonya-gateway service; now runs
       # ---- inside the ecosystem app image) --------------------------------
       WORKSPACE_JWT_SECRET: ${WORKSPACE_JWT_SECRET:?Set WORKSPACE_JWT_SECRET in .env}
